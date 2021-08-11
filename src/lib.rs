@@ -2,8 +2,8 @@ mod nyaa;
 mod interface;
 
 use std::process;
-use crate::interface::{ UserParameters, Website, Media };
-use std::env;
+use crate::interface::{ UserParameters, Website };
+use comfy_table::Table;
 
 #[derive(Debug)]
 pub struct Torrent {
@@ -11,10 +11,6 @@ pub struct Torrent {
     pub magnet: String,
     pub size: String,
     pub seeders: String,
-}
-
-impl UserParameters {
-    fn new(mut args: env::Args) -> () {}
 }
 
 pub fn run() {
@@ -31,8 +27,12 @@ pub fn run() {
         Website::All => process::exit(1),
     };
 
-    for torrent in torrents {
-        println!("{} - {} - {}", torrent.title, torrent.size, torrent.seeders);
-    }
+    let mut table = Table::new();
+    let table = interface::update_torrent_table(&mut table, &torrents);
+    println!("{}", table);
 
+    let magnets = interface::get_selected_magnets(&torrents);
+    for m in magnets {
+        println!("{}", m);
+    }
 }

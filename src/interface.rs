@@ -1,5 +1,11 @@
+use comfy_table::{ Table, ContentArrangement };
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+
+use crate::Torrent;
 use std::io;
 use std::path::Path;
+use std::process;
 
 #[derive(Debug)]
 pub enum Website {
@@ -36,7 +42,7 @@ impl Media {
         }
     }
     
-    fn path(&self) -> &Path {
+    fn _path(&self) -> &Path {
         match self {
             Media::Anime => Path::new("./Downloads/"),
             Media::Movie => Path::new("./Downloads/"),
@@ -112,6 +118,72 @@ impl UserParameters {
 
         String::from(input.trim())
     }
+}
 
+pub fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a Table {
+    let ttable = table
+        .load_preset(UTF8_FULL)
+        .apply_modifier(UTF8_ROUND_CORNERS)
+        .set_content_arrangement(ContentArrangement::Dynamic)
+        .set_header(vec!["#", "Name", "Size", "Seeds"]);
 
+    for (n, t) in torrents.iter().enumerate() {
+        ttable.add_row(vec![&(n+1).to_string(), &t.title, &t.size, &t.seeders]);
+    }
+
+    ttable
+}
+
+pub fn get_selected_magnets(torrents: &[Torrent]) -> Vec<&String> {
+    loop {
+        println!("Select torrent(s) by #:");
+
+        let mut selections = String::new();
+
+        io::stdin()
+            .read_line(&mut selections)
+            .expect("io error: couldn't read torrent selection input");
+        
+        let selections: Vec<&str> = selections.trim().split(" ").collect();
+        if selections.len() < 1 {
+            println!("Please input one or multiple numbers seperated by a space to select torrent(s)");
+            continue;
+        }
+
+        if selections[0].to_lowercase() == "q" {
+            process::exit(1);
+        }
+
+        let magnets = match parse_magnet_selection(torrents, &selections) {
+            Ok(m) => m,
+            Err(s) => {
+                println!("{}", s);
+                continue;
+            }
+        };
+        
+        return magnets;
+    }
+}
+
+fn parse_magnet_selection<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Result<Vec<&'a String>, &'static str> {
+    let mut magnets = Vec::new();
+    for num_str in selections {
+        let num: usize = match num_str.parse() {
+            Ok(0) => {
+                return Err("Only input numbers indicated on the left-most column");
+            },
+            Err(_) => {
+                return Err("Only input numbers indicated on the left-most column");
+            },
+            Ok(num) => num,
+        };
+        
+        if num > torrents.len() {
+            return Err("Input out of range");
+        }
+
+        magnets.push(&torrents[num-1].magnet);
+    }
+    Ok(magnets)
 }

@@ -16,7 +16,7 @@ pub fn query(query: &str) -> Result<Vec<Torrent>, reqwest::Error> {
     let selector = Selector::parse("tbody tr").unwrap();
 
     for table_row in document.select(&selector) {
-        let title = match get_title(query, &table_row) {
+        let title = match get_title(&table_row) {
             Some(title) => title,
             None => continue,
         };
@@ -44,7 +44,20 @@ pub fn query(query: &str) -> Result<Vec<Torrent>, reqwest::Error> {
     Ok(results)
 }
 
-fn get_title(query: &str, table_row: &ElementRef) -> Option<String> { 
+fn get_title(table_row: &ElementRef) -> Option<String> {
+    let selector = Selector::parse("td[colspan] a").unwrap();
+
+    let title = match table_row.select(&selector).nth(1) {
+        Some(t) => t.value().attr("title").unwrap_or(""),
+        None => return None,
+    };
+
+    if title == "" { return None }
+
+    Some(String::from(title))
+}
+
+fn _get_title_verbose(query: &str, table_row: &ElementRef) -> Option<String> { 
     let selector = Selector::parse("td[colspan] a").unwrap();
 
     for data in table_row.select(&selector) {

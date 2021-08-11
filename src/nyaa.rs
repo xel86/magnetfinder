@@ -7,12 +7,12 @@ use scraper::{Html, Selector, element_ref::ElementRef};
 
 pub fn query(query: &str) -> Result<Vec<Torrent>, reqwest::Error> {
     let mut results = Vec::new();
-    let url = format!("https://nyaa.si/?f=0&c=0_0&q={}{}", query, "&s=seeders&o=desc");
 
+    let formatted_query = query.replace(" ", "+");
+    let url = format!("https://nyaa.si/?f=0&c=0_0&q={}{}", formatted_query, "&s=seeders&o=desc");
     let body = reqwest::blocking::get(&url)?.text()?;
 
     let document = Html::parse_document(&body);
-
     let selector = Selector::parse("tbody tr").unwrap();
 
     for table_row in document.select(&selector) {
@@ -20,17 +20,14 @@ pub fn query(query: &str) -> Result<Vec<Torrent>, reqwest::Error> {
             Some(title) => title,
             None => continue,
         };
-
         let magnet = match get_magnet(&table_row) {
             Some(magnet) => magnet,
             None => continue,
         };
-
         let size = match get_size(&table_row) {
             Some(size) => size,
             None => continue,
         };
-
         let seeders = match get_seeders(&table_row) {
             Some(seeders) => seeders,
             None => continue,
@@ -74,7 +71,8 @@ fn get_magnet(table_row: &ElementRef) -> Option<String> {
         };
 
         if magnet.contains("magnet") {
-            return Some(String::from(magnet));
+            let cleaned_magnet = magnet.split("&tr=").next().unwrap_or(magnet);
+            return Some(String::from(cleaned_magnet));
         }
     }
 

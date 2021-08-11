@@ -1,6 +1,9 @@
 mod nyaa;
+mod interface;
 
 use std::process;
+use crate::interface::{ UserParameters, Website, Media };
+use std::env;
 
 #[derive(Debug)]
 pub struct Torrent {
@@ -10,13 +13,26 @@ pub struct Torrent {
     pub seeders: String,
 }
 
-pub fn run() {
-    let v1 = nyaa::query("boku").unwrap_or_else(|err| {
-        eprintln!("Error requesting data from nyaa: {}", err);
-        process::exit(1);
-    });
+impl UserParameters {
+    fn new(mut args: env::Args) -> () {}
+}
 
-    for t in v1 {
-        println!("{} - {} - {} - \n{}", t.title, t.size, t.seeders, t.magnet);
+pub fn run() {
+    let user_parameters = UserParameters::prompt();
+
+    let torrents = match user_parameters.website {
+        Website::Nyaa => {
+            nyaa::query(&user_parameters.search_query).unwrap_or_else(|err| {
+                eprintln!("Error requesting data from nyaa: {}", err);
+                process::exit(1);
+            })
+        },
+        Website::Piratebay => process::exit(1),
+        Website::All => process::exit(1),
+    };
+
+    for torrent in torrents {
+        println!("{} - {} - {}", torrent.title, torrent.size, torrent.seeders);
     }
+
 }

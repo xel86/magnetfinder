@@ -3,7 +3,6 @@ mod interface;
 
 use std::process;
 use crate::interface::{ UserParameters, Website };
-use comfy_table::Table;
 
 #[derive(Debug)]
 pub struct Torrent {
@@ -27,11 +26,9 @@ pub fn run() {
         Website::All => process::exit(1),
     };
 
-    let mut table = Table::new();
-    let table = interface::update_torrent_table(&mut table, &torrents);
-    println!("{}", table);
+    interface::display_torrent_table(&torrents);
 
-    let magnets = interface::get_selected_magnets(&torrents);
+    let magnets = interface::prompt_magnet_selection(&torrents);
     for m in magnets {
         println!("{}", m);
     }

@@ -120,21 +120,28 @@ impl UserParameters {
     }
 }
 
-pub fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a Table {
-    let ttable = table
+pub fn display_torrent_table(torrents: &[Torrent]) {
+    let mut table = Table::new();
+
+    table
         .load_preset(UTF8_FULL)
         .apply_modifier(UTF8_ROUND_CORNERS)
         .set_content_arrangement(ContentArrangement::Dynamic)
         .set_header(vec!["#", "Name", "Size", "Seeds"]);
-
-    for (n, t) in torrents.iter().enumerate() {
-        ttable.add_row(vec![&(n+1).to_string(), &t.title, &t.size, &t.seeders]);
-    }
-
-    ttable
+    
+    let table = update_torrent_table(&mut table, torrents);
+    println!("{}", table);
 }
 
-pub fn get_selected_magnets(torrents: &[Torrent]) -> Vec<&String> {
+fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a Table {
+    for (n, t) in torrents.iter().enumerate() {
+        table.add_row(vec![&(n+1).to_string(), &t.title, &t.size, &t.seeders]);
+    }
+
+    table
+}
+
+pub fn prompt_magnet_selection(torrents: &[Torrent]) -> Vec<&String> {
     loop {
         println!("Select torrent(s) by #:");
 
@@ -154,7 +161,7 @@ pub fn get_selected_magnets(torrents: &[Torrent]) -> Vec<&String> {
             process::exit(1);
         }
 
-        let magnets = match parse_magnet_selection(torrents, &selections) {
+        let magnets = match collect_magnet_links(torrents, &selections) {
             Ok(m) => m,
             Err(s) => {
                 println!("{}", s);
@@ -166,20 +173,17 @@ pub fn get_selected_magnets(torrents: &[Torrent]) -> Vec<&String> {
     }
 }
 
-fn parse_magnet_selection<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Result<Vec<&'a String>, &'static str> {
+fn collect_magnet_links<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Result<Vec<&'a String>, &'static str> {
     let mut magnets = Vec::new();
     for num_str in selections {
         let num: usize = match num_str.parse() {
-            Ok(0) => {
-                return Err("Only input numbers indicated on the left-most column");
-            },
             Err(_) => {
                 return Err("Only input numbers indicated on the left-most column");
             },
             Ok(num) => num,
         };
-        
-        if num > torrents.len() {
+
+        if num > torrents.len() || num <= 0 {
             return Err("Input out of range");
         }
 

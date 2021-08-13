@@ -2,17 +2,10 @@ use comfy_table::{ Table, ContentArrangement };
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 
-use crate::Torrent;
+use crate::{ Torrent, UserParameters, Website, Settings };
 use std::io;
-use std::path::Path;
+use std::path::PathBuf;
 use std::process;
-
-#[derive(Debug)]
-pub enum Website {
-    Nyaa,
-    Piratebay,
-    All,
-}
 
 impl Website {
     fn new(s: &str) -> Result<Website, &'static str> {
@@ -25,7 +18,7 @@ impl Website {
     }
 }
 
-pub enum Media {
+enum Media {
     Anime,
     Movie,
     TVShow,
@@ -42,26 +35,20 @@ impl Media {
         }
     }
     
-    fn _path(&self) -> &Path {
+    fn path<'a>(&self, settings: &'a Settings) -> &'a PathBuf {
         match self {
-            Media::Anime => Path::new("./Downloads/"),
-            Media::Movie => Path::new("./Downloads/"),
-            Media::TVShow => Path::new("./Downloads/"),
+            Media::Anime => &settings.anime_dir,
+            Media::Movie => &settings.movie_dir,
+            Media::TVShow => &settings.tvshow_dir,
         }
     }
 }
 
-pub struct UserParameters {
-    pub website: Website,
-    pub type_of_media: Media,
-    pub search_query: String,
-}
-
-impl UserParameters {
-    pub fn prompt() -> UserParameters {
+impl UserParameters<'_> {
+    pub fn prompt<'a>(settings: &'a Settings) -> UserParameters {
         UserParameters {
             website: UserParameters::get_websites(),
-            type_of_media: UserParameters::get_media(),
+            directory: UserParameters::get_media().path(settings),
             search_query: UserParameters::get_search_query(),
         }
     }
@@ -141,7 +128,7 @@ fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a T
     table
 }
 
-pub fn prompt_magnet_selection(torrents: &[Torrent]) -> Vec<&String> {
+pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Vec<&String> {
     loop {
         println!("Select torrent(s) by #:");
 

@@ -1,6 +1,3 @@
-extern crate reqwest;
-extern crate scraper;
-
 use crate::Torrent;
 use scraper::{Html, Selector, element_ref::ElementRef};
 

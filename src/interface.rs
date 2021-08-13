@@ -35,7 +35,7 @@ impl Media {
         }
     }
     
-    fn path<'a>(&self, settings: &'a Settings) -> &'a PathBuf {
+    fn path<'s>(&self, settings: &'s Settings) -> &'s PathBuf {
         match self {
             Media::Anime => &settings.anime_dir,
             Media::Movie => &settings.movie_dir,

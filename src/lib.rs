@@ -1,10 +1,12 @@
 mod nyaa;
 mod interface;
+mod settings;
 
 use std::process;
-use crate::interface::{ UserParameters, Website };
+use std::path::PathBuf;
 
-#[derive(Debug)]
+use settings::Settings;
+
 pub struct Torrent {
     pub title: String,
     pub magnet: String,
@@ -12,8 +14,28 @@ pub struct Torrent {
     pub seeders: String,
 }
 
+pub enum Website {
+    Nyaa,
+    Piratebay,
+    All,
+}
+
+pub struct UserParameters<'s> {
+    pub website: Website,
+    pub directory: &'s PathBuf,
+    pub search_query: String,
+}
+
 pub fn run() {
-    let user_parameters = UserParameters::prompt();
+    let settings = match Settings::fetch() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("error reading settings file: {}", e);
+            Settings::default()
+        },
+    };
+
+    let user_parameters = UserParameters::prompt(&settings);
 
     let torrents = match user_parameters.website {
         Website::Nyaa => {
@@ -28,8 +50,32 @@ pub fn run() {
 
     interface::display_torrent_table(&torrents);
 
-    let magnets = interface::prompt_magnet_selection(&torrents);
-    for m in magnets {
-        println!("{}", m);
+    let magnets = interface::prompt_torrent_selection(&torrents);
+    
+    if settings.autodownload {
+        for m in magnets {
+            download_torrent(user_parameters.directory.to_str().unwrap(), &m);
+        }
     }
+    else {
+        for m in magnets {
+            println!("{}", m);
+        }
+    }
+}
+
+fn download_torrent(dir: &str, magnet: &str) {
+    match process::Command::new("sudo")
+        .arg("deluge-console")
+        .arg("add")
+        .arg("-p")
+        .arg(dir)
+        .arg(magnet)
+        .status() {
+            Err(err) => {
+                eprintln!("Failed to autodownload using torrent client selected: {}", err);
+                println!("{}", magnet);
+            },
+            Ok(_) => (),
+        }
 }

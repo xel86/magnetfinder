@@ -4,6 +4,7 @@ mod settings;
 
 use std::process;
 use std::path::PathBuf;
+use clap::ArgMatches;
 
 use settings::Settings;
 
@@ -20,13 +21,14 @@ pub enum Website {
     All,
 }
 
-pub struct UserParameters<'s> {
-    pub website: Website,
-    pub directory: &'s PathBuf,
+pub struct UserParameters {
+    pub websites: Vec<Website>,
+    pub directory: PathBuf,
     pub search_query: String,
+    pub autodownload: bool,
 }
 
-pub fn run() {
+pub fn run(args: ArgMatches) {
     let settings = match Settings::fetch() {
         Ok(s) => s,
         Err(e) => {
@@ -35,24 +37,27 @@ pub fn run() {
         },
     };
 
-    let user_parameters = UserParameters::prompt(&settings);
+    let user_parameters = UserParameters::get_params(args, &settings);
 
-    let torrents = match user_parameters.website {
-        Website::Nyaa => {
-            nyaa::query(&user_parameters.search_query).unwrap_or_else(|err| {
-                eprintln!("Error requesting data from nyaa: {}", err);
-                process::exit(1);
-            })
-        },
-        Website::Piratebay => process::exit(1),
-        Website::All => process::exit(1),
-    };
+    let mut torrents: Vec<Torrent> = Vec::new();
+    for website in user_parameters.websites {
+        torrents.extend(match website {
+            Website::Nyaa => {
+                nyaa::query(&user_parameters.search_query).unwrap_or_else(|err| {
+                    eprintln!("Error requesting data from nyaa: {}", err);
+                    process::exit(1);
+                })
+            },
+            Website::Piratebay => process::exit(1),
+            Website::All => process::exit(1),
+        });
+    }
 
     interface::display_torrent_table(&torrents);
 
     let magnets = interface::prompt_torrent_selection(&torrents);
     
-    if settings.autodownload {
+    if user_parameters.autodownload {
         for m in magnets {
             download_torrent(user_parameters.directory.to_str().unwrap(), &m);
         }

@@ -6,6 +6,7 @@ use crate::{ Torrent, UserParameters, Website, Settings };
 use std::io;
 use std::path::PathBuf;
 use std::process;
+use clap::ArgMatches;
 
 impl Website {
     fn new(s: &str) -> Result<Website, &'static str> {
@@ -35,25 +36,70 @@ impl Media {
         }
     }
     
-    fn path<'s>(&self, settings: &'s Settings) -> &'s PathBuf {
+    fn path(&self, settings: &Settings) -> PathBuf {
         match self {
-            Media::Anime => &settings.anime_dir,
-            Media::Movie => &settings.movie_dir,
-            Media::TVShow => &settings.tvshow_dir,
+            Media::Anime => settings.anime_dir.clone(),
+            Media::Movie => settings.movie_dir.clone(),
+            Media::TVShow => settings.tvshow_dir.clone(),
         }
     }
 }
 
-impl UserParameters<'_> {
-    pub fn prompt<'a>(settings: &'a Settings) -> UserParameters {
-        UserParameters {
-            website: UserParameters::get_websites(),
-            directory: UserParameters::get_media().path(settings),
-            search_query: UserParameters::get_search_query(),
+impl UserParameters {
+    pub fn get_params<'a>(args: ArgMatches, settings: &'a Settings) -> UserParameters {
+        if !args_present(&args) {
+            return UserParameters::prompt(settings);
+        }
+        else {
+            return UserParameters::fetch(&args);
         }
     }
 
-    fn get_websites() -> Website {
+    // handles user interface for providing user settings instead of cmd arguments
+    fn prompt<'a>(settings: &'a Settings) -> UserParameters {
+        UserParameters {
+            websites: UserParameters::get_websites(),
+            directory: UserParameters::get_media().path(settings),
+            search_query: UserParameters::get_search_query(),
+            autodownload: settings.autodownload,
+        }
+    }
+
+    // parses provided cmd arguments bypassing user interface prompt
+    fn fetch<'a>(args: &'a ArgMatches) -> UserParameters {
+        let mut websites: Vec<Website> = Vec::new();
+        if args.is_present("nyaa") { websites.push(Website::Nyaa); }
+        if args.is_present("piratebay") { websites.push(Website::Piratebay); }
+        if args.is_present("all") { websites.push(Website::All); }
+        
+        if websites.len() < 1 {
+            eprintln!("Must select website to scrape from, -n for nyaa, -p for piratebay, -a for all");
+            process::exit(1);
+        }
+
+        let directory = match args.value_of("directory") {
+            Some(d) => {
+                let mut path = PathBuf::from(d);
+                if !path.is_dir() {
+                    path = Settings::get_downloads_dir()
+                }
+                path
+            }
+            None => Settings::get_downloads_dir(),
+        };
+
+        UserParameters {
+            websites,
+            directory,
+            search_query: String::from(args.value_of("query").unwrap_or_else(|| {
+                eprintln!("Must provide a valid search query (-q/--query \"search term\")");
+                process::exit(1);
+            })),
+            autodownload: args.is_present("download"),
+        }
+    }
+
+    fn get_websites() -> Vec<Website> {
         loop {
             let mut input = String::new();
             println!("Website(s) to search from? (nyaa, piratebay, all)");
@@ -70,7 +116,7 @@ impl UserParameters<'_> {
                 },
             };
 
-            return websites;
+            return vec![websites];
         }
     }
 
@@ -177,4 +223,12 @@ fn collect_magnet_links<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Res
         magnets.push(&torrents[num-1].magnet);
     }
     Ok(magnets)
+}
+
+fn args_present(args: &ArgMatches) -> bool {
+    args.is_present("nyaa") ||
+    args.is_present("piratebay") ||
+    args.is_present("all") ||
+    args.is_present("download") ||
+    args.is_present("directory")
 }

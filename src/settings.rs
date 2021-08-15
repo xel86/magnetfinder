@@ -32,9 +32,21 @@ impl Default for Settings {
 }
 
 impl Settings {
+    pub fn get_downloads_dir() -> PathBuf {
+        let mut downloads_dir = match home_dir() {
+            Some(p) => p,
+            None => {
+                eprintln!("Error getting home directory");
+                process::exit(1);
+            }
+        };
+        downloads_dir.push("Downloads/");
+
+        downloads_dir
+    }
     pub fn fetch() -> Result<Self, ConfigError> {
         let mut s = Config::default();
-        let defaults = Settings::default();
+        let download_dir = Settings::get_downloads_dir();
         
         s.merge(File::with_name("Settings"))?;
 
@@ -42,38 +54,38 @@ impl Settings {
             Ok(v) => {
                 let mut path = PathBuf::from(v);
                 if !path.is_dir() {
-                    path = defaults.anime_dir
+                    path = download_dir.clone()
                 }
                 path
             },
-            Err(_) => defaults.anime_dir,
+            Err(_) => download_dir.clone(),
         };
 
         let tvshow_dir = match s.get::<String>("tvshow_dir") {
             Ok(v) => {
                 let mut path = PathBuf::from(v);
                 if !path.is_dir() {
-                    path = defaults.tvshow_dir
+                    path = download_dir.clone()
                 }
                 path
             },
-            Err(_) => defaults.tvshow_dir,
+            Err(_) => download_dir.clone(),
         };
 
         let movie_dir = match s.get::<String>("movie_dir") {
             Ok(v) => {
                 let mut path = PathBuf::from(v);
                 if !path.is_dir() {
-                    path = defaults.movie_dir
+                    path = download_dir.clone()
                 }
                 path
             },
-            Err(_) => defaults.movie_dir,
+            Err(_) => download_dir.clone(),
         };
 
         let autodownload = match s.get_bool("autodownload") {
             Ok(v) => v,
-            Err(_) => defaults.autodownload,
+            Err(_) => false,
         };
         
         Ok(Settings {

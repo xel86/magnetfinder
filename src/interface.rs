@@ -46,27 +46,35 @@ impl Media {
 }
 
 impl UserParameters {
-    pub fn get_params<'a>(args: ArgMatches, settings: &'a Settings) -> UserParameters {
+    pub fn get_params(args: ArgMatches) -> UserParameters {
         if !args_present(&args) {
-            return UserParameters::prompt(settings);
+            return UserParameters::prompt();
         }
         else {
-            return UserParameters::fetch(&args);
+            return UserParameters::fetch(args);
         }
     }
 
     // handles user interface for providing user settings instead of cmd arguments
-    fn prompt<'a>(settings: &'a Settings) -> UserParameters {
+    fn prompt() -> UserParameters {
+        let settings = match Settings::fetch() {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("error reading settings file: {}", e);
+                Settings::default()
+            },
+        };
+
         UserParameters {
             websites: UserParameters::get_websites(),
-            directory: UserParameters::get_media().path(settings),
+            directory: UserParameters::get_media().path(&settings),
             search_query: UserParameters::get_search_query(),
             autodownload: settings.autodownload,
         }
     }
 
     // parses provided cmd arguments bypassing user interface prompt
-    fn fetch<'a>(args: &'a ArgMatches) -> UserParameters {
+    fn fetch(args: ArgMatches) -> UserParameters {
         let mut websites: Vec<Website> = Vec::new();
         if args.is_present("nyaa") { websites.push(Website::Nyaa); }
         if args.is_present("piratebay") { websites.push(Website::Piratebay); }

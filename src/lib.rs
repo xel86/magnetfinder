@@ -4,6 +4,7 @@ mod settings;
 
 use std::process;
 use std::path::PathBuf;
+use std::cmp::Reverse;
 use clap::ArgMatches;
 
 use settings::Settings;
@@ -29,15 +30,7 @@ pub struct UserParameters {
 }
 
 pub fn run(args: ArgMatches) {
-    let settings = match Settings::fetch() {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("error reading settings file: {}", e);
-            Settings::default()
-        },
-    };
-
-    let user_parameters = UserParameters::get_params(args, &settings);
+    let user_parameters = UserParameters::get_params(args);
 
     let mut torrents: Vec<Torrent> = Vec::new();
     for website in user_parameters.websites {
@@ -52,6 +45,7 @@ pub fn run(args: ArgMatches) {
             Website::All => process::exit(1),
         });
     }
+    torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0)));
 
     interface::display_torrent_table(&torrents);
 

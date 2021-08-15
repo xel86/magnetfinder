@@ -9,11 +9,11 @@ use std::process;
 use clap::ArgMatches;
 
 impl Website {
-    fn new(s: &str) -> Result<Website, &'static str> {
+    fn new(s: &str) -> Result<Vec<Website>, &'static str> {
         match s.trim().to_lowercase().as_str() {
-            "nyaa" => Ok(Website::Nyaa),
-            "piratebay" => Ok(Website::Piratebay),
-            "all" => Ok(Website::All),
+            "nyaa" => Ok(vec![Website::Nyaa]),
+            "piratebay" => Ok(vec![Website::Piratebay]),
+            "all" => Ok(vec![Website::Nyaa, Website::Piratebay]),
             _ => Err("Unknown website, supported sites: nyaa, piratebay"),
         }
     }
@@ -78,7 +78,7 @@ impl UserParameters {
         let mut websites: Vec<Website> = Vec::new();
         if args.is_present("nyaa") { websites.push(Website::Nyaa); }
         if args.is_present("piratebay") { websites.push(Website::Piratebay); }
-        if args.is_present("all") { websites.push(Website::All); }
+        if args.is_present("all") { websites = Website::new("all").unwrap(); }
         
         if websites.len() < 1 {
             eprintln!("Must select website to scrape from, -n for nyaa, -p for piratebay, -a for all");
@@ -124,7 +124,7 @@ impl UserParameters {
                 },
             };
 
-            return vec![websites];
+            return websites;
         }
     }
 
@@ -161,17 +161,28 @@ impl UserParameters {
     }
 }
 
-pub fn display_torrent_table(torrents: &[Torrent]) {
-    let mut table = Table::new();
+pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String>{
+    let mut torrents_shown: usize = if torrents.len() < 20 { torrents.len() } else { 20 };
+    loop {
+        let mut table = Table::new();
 
-    table
-        .load_preset(UTF8_FULL)
-        .apply_modifier(UTF8_ROUND_CORNERS)
-        .set_content_arrangement(ContentArrangement::Dynamic)
-        .set_header(vec!["#", "Name", "Size", "Seeds"]);
+        table
+            .load_preset(UTF8_FULL)
+            .apply_modifier(UTF8_ROUND_CORNERS)
+            .set_content_arrangement(ContentArrangement::Dynamic)
+            .set_header(vec!["#", "Name", "Size", "Seeds"]);
     
-    let table = update_torrent_table(&mut table, torrents);
-    println!("{}", table);
+        let table = update_torrent_table(&mut table, &torrents[0..torrents_shown]);
+        println!("{}", table);
+
+        match prompt_torrent_selection(&torrents) {
+            Some(m) => return m,
+            None => (),
+        };
+
+        torrents_shown =
+        if torrents.len() < torrents_shown+20 { torrents.len() } else { torrents_shown+20 };
+    }
 }
 
 fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a Table {
@@ -182,9 +193,9 @@ fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a T
     table
 }
 
-pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Vec<&String> {
+pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Option<Vec<&String>> {
     loop {
-        println!("Select torrent(s) by #:");
+        println!("Type 'n' to display 20 more torrents, or select torrent(s) by #:");
 
         let mut selections = String::new();
 
@@ -202,6 +213,10 @@ pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Vec<&String> {
             process::exit(1);
         }
 
+        if selections[0].to_lowercase() == "n" {
+            return None;
+        }
+
         let magnets = match collect_magnet_links(torrents, &selections) {
             Ok(m) => m,
             Err(s) => {
@@ -210,7 +225,7 @@ pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Vec<&String> {
             }
         };
         
-        return magnets;
+        return Some(magnets);
     }
 }
 

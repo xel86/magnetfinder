@@ -1,4 +1,5 @@
 mod nyaa;
+mod piratebay;
 mod interface;
 mod settings;
 
@@ -19,7 +20,6 @@ pub struct Torrent {
 pub enum Website {
     Nyaa,
     Piratebay,
-    All,
 }
 
 pub struct UserParameters {
@@ -41,15 +41,17 @@ pub fn run(args: ArgMatches) {
                     process::exit(1);
                 })
             },
-            Website::Piratebay => process::exit(1),
-            Website::All => process::exit(1),
+            Website::Piratebay => { 
+                piratebay::query(&user_parameters.search_query).unwrap_or_else(|err| {
+                    eprintln!("Error requesting data from nyaa: {}", err);
+                    process::exit(1);
+                })
+            },
         });
     }
     torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0)));
 
-    interface::display_torrent_table(&torrents);
-
-    let magnets = interface::prompt_torrent_selection(&torrents);
+    let magnets = interface::display_torrent_table(&torrents);
     
     if user_parameters.autodownload {
         for m in magnets {

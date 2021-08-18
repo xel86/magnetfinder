@@ -60,7 +60,10 @@ impl UserParameters {
         let settings = match Settings::fetch() {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("error reading settings file: {}", e);
+                eprintln!("error reading settings file: {}\ngenerating default Settings.toml\n", e);
+                Settings::generate_settings_file().unwrap_or_else(|err| {
+                    eprintln!("error generating new settings file: {}\n", err);
+                });
                 Settings::default()
             },
         };

@@ -1,8 +1,11 @@
 use config::{ConfigError, Config, File};
 use serde::{Deserialize};
-use std::path::PathBuf;
 use dirs::home_dir;
+
+use std::path::PathBuf;
 use std::process;
+use std::fs;
+use std::io::{self, Write};
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -94,5 +97,24 @@ impl Settings {
             movie_dir,
             autodownload,
         })
+    }
+
+    pub fn generate_settings_file() -> Result<(), io::Error>{
+        let mut file = fs::File::create("Settings.toml")?;
+
+        file.write_all(
+b"# Change directories to where you want each type of media to download to
+# The default directory is your downloads folder
+# use absolute paths (/home/user/Downloads/ , C:\\..\\user\\downloads\\ )
+anime_dir = \"\"
+tvshow_dir = \"\"
+movie_dir = \"\"
+
+# Autodownload takes the magnet link selected and
+# uses the torrent-client chosen to begin downloading the torrent
+autodownload = false"
+        )?;
+
+        Ok(())
     }
 }

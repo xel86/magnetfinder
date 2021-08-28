@@ -34,57 +34,60 @@ impl Default for Settings {
     }
 }
 
-impl Settings {
-    pub fn get_downloads_dir() -> PathBuf {
-        let mut downloads_dir = match home_dir() {
-            Some(p) => p,
-            None => {
-                eprintln!("Error getting home directory");
-                process::exit(1);
-            }
-        };
-        downloads_dir.push("Downloads/");
+pub struct DownloadDirCache {
+    value: Option<PathBuf>,
+}
 
-        downloads_dir
+impl DownloadDirCache {
+    pub fn new() -> DownloadDirCache {
+        DownloadDirCache {
+            value: None,
+        }
     }
-    pub fn fetch() -> Result<Self, ConfigError> {
-        let mut s = Config::default();
-        let download_dir = Settings::get_downloads_dir();
+
+    pub fn value(&mut self) -> PathBuf {
+        match &self.value {
+            Some(path) => path.clone(),
+            None => {
+                let mut dir = match home_dir() {
+                    Some(p) => p,
+                    None => {
+                        eprintln!("Error getting home directory");
+                        process::exit(1);
+                    }
+                };
+                dir.push("Downloads/");
         
+                self.value = Some(dir.clone());
+                dir
+            }
+        }
+    }
+}
+
+impl Settings {
+    fn validate_set_path(path: Result<String, ConfigError>, default: &mut DownloadDirCache) -> PathBuf {
+        match path {
+            Ok(v) => {
+                let mut path = PathBuf::from(v);
+                if !path.is_dir() {
+                    path = default.value()
+                }
+                path
+            },
+            Err(_) => default.value(),
+        }
+    }
+
+    pub fn fetch() -> Result<Settings, ConfigError> {
+        let mut s = Config::default();
         s.merge(File::with_name("Settings"))?;
 
-        let anime_dir = match s.get::<String>("anime_dir") {
-            Ok(v) => {
-                let mut path = PathBuf::from(v);
-                if !path.is_dir() {
-                    path = download_dir.clone()
-                }
-                path
-            },
-            Err(_) => download_dir.clone(),
-        };
+        let mut fallback_dir = DownloadDirCache::new();
 
-        let tvshow_dir = match s.get::<String>("tvshow_dir") {
-            Ok(v) => {
-                let mut path = PathBuf::from(v);
-                if !path.is_dir() {
-                    path = download_dir.clone()
-                }
-                path
-            },
-            Err(_) => download_dir.clone(),
-        };
-
-        let movie_dir = match s.get::<String>("movie_dir") {
-            Ok(v) => {
-                let mut path = PathBuf::from(v);
-                if !path.is_dir() {
-                    path = download_dir.clone()
-                }
-                path
-            },
-            Err(_) => download_dir.clone(),
-        };
+        let anime_dir = Settings::validate_set_path(s.get::<String>("anime_dir"), &mut fallback_dir);
+        let tvshow_dir = Settings::validate_set_path(s.get::<String>("tvshow_dir"), &mut fallback_dir);
+        let movie_dir = Settings::validate_set_path(s.get::<String>("movie_dir"), &mut fallback_dir);
 
         let autodownload = match s.get_bool("autodownload") {
             Ok(v) => v,

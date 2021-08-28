@@ -2,7 +2,7 @@ use comfy_table::{ Table, ContentArrangement };
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 
-use crate::{ Torrent, UserParameters, Website, Settings };
+use crate::{ Torrent, UserParameters, Website, Settings, DownloadDirCache };
 use std::io;
 use std::path::PathBuf;
 use std::process;
@@ -88,15 +88,16 @@ impl UserParameters {
             process::exit(1);
         }
 
+        let mut default_directory = DownloadDirCache::new();
         let directory = match args.value_of("directory") {
             Some(d) => {
                 let mut path = PathBuf::from(d);
                 if !path.is_dir() {
-                    path = Settings::get_downloads_dir()
+                    path = default_directory.value();
                 }
                 path
             }
-            None => Settings::get_downloads_dir(),
+            None => default_directory.value(),
         };
 
         UserParameters {

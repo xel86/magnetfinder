@@ -2,11 +2,12 @@ use crate::Torrent;
 use scraper::{Html, Selector, element_ref::ElementRef};
 
 
-pub fn query(query: &str) -> Result<Vec<Torrent>, reqwest::Error> {
+pub fn query(query: &str, depth: u32) -> Result<Vec<Torrent>, reqwest::Error> {
     let mut results = Vec::new();
 
+    for page_number in 1..=depth {
     let formatted_query = query.replace(" ", "%20");
-    let url = format!("https://www.tpb.party/search/{}", formatted_query);
+    let url = format!("https://www.tpb.party/search/{}/{}/99/0", formatted_query, page_number);
     let body = reqwest::blocking::get(&url)?.text()?;
 
     let document = Html::parse_document(&body);
@@ -36,6 +37,7 @@ pub fn query(query: &str) -> Result<Vec<Torrent>, reqwest::Error> {
             size,
             seeders,
         });
+    }
     }
 
     Ok(results)

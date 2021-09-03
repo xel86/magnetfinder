@@ -26,6 +26,7 @@ pub struct UserParameters {
     pub websites: Vec<Website>,
     pub directory: PathBuf,
     pub search_query: String,
+    pub search_depth: u32,
     pub autodownload: bool,
 }
 
@@ -36,13 +37,13 @@ pub fn run(args: ArgMatches) {
     for website in user_parameters.websites {
         torrents.extend(match website {
             Website::Nyaa => {
-                nyaa::query(&user_parameters.search_query).unwrap_or_else(|err| {
+                nyaa::query(&user_parameters.search_query, user_parameters.search_depth).unwrap_or_else(|err| {
                     eprintln!("Error requesting data from nyaa: {}", err);
                     process::exit(1);
                 })
             },
             Website::Piratebay => { 
-                piratebay::query(&user_parameters.search_query).unwrap_or_else(|err| {
+                piratebay::query(&user_parameters.search_query, user_parameters.search_depth).unwrap_or_else(|err| {
                     eprintln!("Error requesting data from nyaa: {}", err);
                     process::exit(1);
                 })

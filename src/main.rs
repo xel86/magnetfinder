@@ -42,6 +42,12 @@ fn main() {
                 .short("q")
                 .takes_value(true)
         )
+        .arg(
+            Arg::with_name("depth")
+                .help("specifies how many pages to search, default is 1")
+                .long("depth")
+                .takes_value(true)
+        )
         .get_matches();
 
     magnetfinder::run(matches);

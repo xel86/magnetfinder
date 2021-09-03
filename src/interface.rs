@@ -72,6 +72,7 @@ impl UserParameters {
             websites: UserParameters::get_websites(),
             directory: UserParameters::get_media().path(&settings),
             search_query: UserParameters::get_search_query(),
+            search_depth: 1,
             autodownload: settings.autodownload,
         }
     }
@@ -99,6 +100,13 @@ impl UserParameters {
             None => Settings::get_downloads_dir(),
         };
 
+        let search_depth: u32 = match args.value_of("depth") {
+            Some(n) => {
+                n.trim().parse().unwrap_or(1) 
+            }, 
+            None => 1,
+        };
+
         UserParameters {
             websites,
             directory,
@@ -106,6 +114,7 @@ impl UserParameters {
                 eprintln!("Must provide a valid search query (-q/--query \"search term\")");
                 process::exit(1);
             })),
+            search_depth,
             autodownload: args.is_present("download"),
         }
     }

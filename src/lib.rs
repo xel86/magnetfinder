@@ -9,6 +9,7 @@ use std::cmp::Reverse;
 use clap::ArgMatches;
 
 use settings::Settings;
+use settings::DownloadDirCache;
 
 pub struct Torrent {
     pub title: String,

@@ -8,7 +8,7 @@ Supported Websites:
 Supported torrent client for autodownloads:
 - deluge-console
 
-![](images/example.png)
+![](https://i.imgur.com/AVu6GnT.png)
 
 ## Installation (from source)
 First install rust if you haven't already: https://www.rust-lang.org/tools/install

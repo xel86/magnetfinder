@@ -639,7 +639,6 @@ dependencies = [
  "dirs",
  "reqwest",
  "scraper",
- "serde 1.0.127",
 ]
 
 [[package]]
@@ -1257,9 +1256,6 @@ name = "serde"
 version = "1.0.127"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f03b9878abf6d14e6779d3f24f07b2cfa90352cfec4acc5aab8f1ac7f146fae8"
-dependencies = [
- "serde_derive",
-]
 
 [[package]]
 name = "serde-hjson"
@@ -1271,17 +1267,6 @@ dependencies = [
  "num-traits 0.1.43",
  "regex",
  "serde 0.8.23",
-]
-
-[[package]]
-name = "serde_derive"
-version = "1.0.127"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a024926d3432516606328597e0f224a51355a493b49fdd67e9209187cbe55ecc"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use serde::{Deserialize};
 
 pub struct Torrent {
     pub title: String,
@@ -13,7 +12,6 @@ pub enum Website {
     Piratebay,
 }
 
-#[derive(Debug, Deserialize)]
 pub struct Settings {
     pub anime_dir: PathBuf,
     pub tvshow_dir: PathBuf,

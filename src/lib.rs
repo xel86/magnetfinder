@@ -1,35 +1,13 @@
 mod nyaa;
 mod piratebay;
 mod interface;
+mod types;
 mod settings;
 
 use std::process;
-use std::path::PathBuf;
 use std::cmp::Reverse;
 use clap::ArgMatches;
-
-use settings::Settings;
-use settings::DownloadDirCache;
-
-pub struct Torrent {
-    pub title: String,
-    pub magnet: String,
-    pub size: String,
-    pub seeders: String,
-}
-
-pub enum Website {
-    Nyaa,
-    Piratebay,
-}
-
-pub struct UserParameters {
-    pub websites: Vec<Website>,
-    pub directory: PathBuf,
-    pub search_query: String,
-    pub search_depth: u32,
-    pub autodownload: bool,
-}
+use types::{Settings, UserParameters, Website, Torrent};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);

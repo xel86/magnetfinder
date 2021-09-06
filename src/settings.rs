@@ -1,19 +1,11 @@
 use config::{ConfigError, Config, File};
-use serde::{Deserialize};
 use dirs::home_dir;
 
 use std::path::PathBuf;
 use std::process;
 use std::fs;
 use std::io::{self, Write};
-
-#[derive(Debug, Deserialize)]
-pub struct Settings {
-    pub anime_dir: PathBuf,
-    pub tvshow_dir: PathBuf,
-    pub movie_dir: PathBuf,
-    pub autodownload: bool,
-}
+use crate::Settings;
 
 impl Default for Settings {
     fn default() -> Self {

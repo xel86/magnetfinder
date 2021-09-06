@@ -2,7 +2,8 @@ use comfy_table::{ Table, ContentArrangement };
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 
-use crate::{ Torrent, UserParameters, Website, Settings, DownloadDirCache };
+use crate::{ Torrent, UserParameters, Website, Settings};
+use crate::settings::DownloadDirCache;
 use std::io;
 use std::path::PathBuf;
 use std::process;

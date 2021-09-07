@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::rc::Rc;
 
 pub struct Torrent {
     pub title: String,
@@ -12,16 +13,22 @@ pub enum Website {
     Piratebay,
 }
 
+pub enum Media {
+    Anime,
+    Movie,
+    TVShow,
+}
+
 pub struct Settings {
-    pub anime_dir: PathBuf,
-    pub tvshow_dir: PathBuf,
-    pub movie_dir: PathBuf,
+    pub anime_dir: Rc<PathBuf>,
+    pub tvshow_dir: Rc<PathBuf>,
+    pub movie_dir: Rc<PathBuf>,
     pub autodownload: bool,
 }
 
 pub struct UserParameters {
     pub websites: Vec<Website>,
-    pub directory: PathBuf,
+    pub directory: Rc<PathBuf>,
     pub search_query: String,
     pub search_depth: u32,
     pub autodownload: bool,

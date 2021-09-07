@@ -6,8 +6,10 @@ mod settings;
 
 use std::process;
 use std::cmp::Reverse;
+
 use clap::ArgMatches;
-use types::{Settings, UserParameters, Website, Torrent};
+
+use types::{Settings, UserParameters, Website, Media, Torrent};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);

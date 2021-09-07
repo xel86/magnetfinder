@@ -1,13 +1,15 @@
-use comfy_table::{ Table, ContentArrangement };
-use comfy_table::presets::UTF8_FULL;
-use comfy_table::modifiers::UTF8_ROUND_CORNERS;
-
-use crate::{ Torrent, UserParameters, Website, Settings};
-use crate::settings::DownloadDirCache;
 use std::io;
 use std::path::PathBuf;
 use std::process;
+use std::rc::Rc;
+
+use comfy_table::{ Table, ContentArrangement };
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use clap::ArgMatches;
+
+use crate::{ Torrent, UserParameters, Website, Media, Settings};
+use crate::settings::DownloadDirCache;
 
 impl Website {
     fn new(s: &str) -> Result<Vec<Website>, &'static str> {
@@ -18,12 +20,6 @@ impl Website {
             _ => Err("Unknown website, supported sites: nyaa, piratebay"),
         }
     }
-}
-
-enum Media {
-    Anime,
-    Movie,
-    TVShow,
 }
 
 impl Media {
@@ -37,11 +33,11 @@ impl Media {
         }
     }
     
-    fn path(&self, settings: &Settings) -> PathBuf {
+    fn path(&self, settings: &Settings) -> Rc<PathBuf> {
         match self {
-            Media::Anime => settings.anime_dir.clone(),
-            Media::Movie => settings.movie_dir.clone(),
-            Media::TVShow => settings.tvshow_dir.clone(),
+            Media::Anime => Rc::clone(&settings.anime_dir),
+            Media::Movie => Rc::clone(&settings.movie_dir),
+            Media::TVShow => Rc::clone(&settings.tvshow_dir),
         }
     }
 }
@@ -93,7 +89,7 @@ impl UserParameters {
         let mut default_directory = DownloadDirCache::new();
         let directory = match args.value_of("directory") {
             Some(d) => {
-                let mut path = PathBuf::from(d);
+                let mut path = Rc::new(PathBuf::from(d));
                 if !path.is_dir() {
                     path = default_directory.value();
                 }

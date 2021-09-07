@@ -1,10 +1,12 @@
-use config::{ConfigError, Config, File};
-use dirs::home_dir;
-
 use std::path::PathBuf;
 use std::process;
 use std::fs;
 use std::io::{self, Write};
+use std::rc::Rc;
+
+use config::{ConfigError, Config, File};
+use dirs::home_dir;
+
 use crate::Settings;
 
 impl Default for Settings {
@@ -17,17 +19,19 @@ impl Default for Settings {
             }
         };
         downloads_dir.push("Downloads/");
+
+        let downloads_dir: Rc<PathBuf> = Rc::new(downloads_dir);
         Settings {
-            anime_dir: downloads_dir.clone(),
-            tvshow_dir: downloads_dir.clone(),
-            movie_dir: downloads_dir.clone(),
+            anime_dir: Rc::clone(&downloads_dir),
+            tvshow_dir: Rc::clone(&downloads_dir),
+            movie_dir: Rc::clone(&downloads_dir),
             autodownload: false,
         }
     }
 }
 
 pub struct DownloadDirCache {
-    value: Option<PathBuf>,
+    value: Option<Rc<PathBuf>>,
 }
 
 impl DownloadDirCache {
@@ -37,9 +41,9 @@ impl DownloadDirCache {
         }
     }
 
-    pub fn value(&mut self) -> PathBuf {
+    pub fn value(&mut self) -> Rc<PathBuf> {
         match &self.value {
-            Some(path) => path.clone(),
+            Some(val) => Rc::clone(&val),
             None => {
                 let mut dir = match home_dir() {
                     Some(p) => p,
@@ -49,8 +53,9 @@ impl DownloadDirCache {
                     }
                 };
                 dir.push("Downloads/");
-        
-                self.value = Some(dir.clone());
+                
+                let dir: Rc<PathBuf> = Rc::new(dir);
+                self.value = Some(Rc::clone(&dir));
                 dir
             }
         }
@@ -58,10 +63,10 @@ impl DownloadDirCache {
 }
 
 impl Settings {
-    fn validate_set_path(path: Result<String, ConfigError>, default: &mut DownloadDirCache) -> PathBuf {
+    fn validate_set_path(path: Result<String, ConfigError>, default: &mut DownloadDirCache) -> Rc<PathBuf> {
         match path {
             Ok(v) => {
-                let mut path = PathBuf::from(v);
+                let mut path = Rc::new(PathBuf::from(v));
                 if !path.is_dir() {
                     path = default.value()
                 }

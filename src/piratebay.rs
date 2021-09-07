@@ -1,6 +1,6 @@
-use crate::Torrent;
 use scraper::{Html, Selector, element_ref::ElementRef};
 
+use crate::Torrent;
 
 pub fn query(query: &str, depth: u32) -> Result<Vec<Torrent>, reqwest::Error> {
     let mut results = Vec::new();

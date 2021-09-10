@@ -6,6 +6,7 @@ mod settings;
 
 use std::process;
 use std::cmp::Reverse;
+use std::sync::mpsc;
 
 use clap::ArgMatches;
 
@@ -14,23 +15,25 @@ use types::{Settings, UserParameters, Website, Media, Torrent};
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);
 
-    let mut torrents: Vec<Torrent> = Vec::new();
+    let (tx, rx) = mpsc::channel();
+
     for website in user_parameters.websites {
-        torrents.extend(match website {
+        match website {
             Website::Nyaa => {
-                nyaa::query(&user_parameters.search_query, user_parameters.search_depth).unwrap_or_else(|err| {
-                    eprintln!("Error requesting data from nyaa: {}", err);
-                    process::exit(1);
-                })
+                nyaa::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
             },
             Website::Piratebay => { 
-                piratebay::query(&user_parameters.search_query, user_parameters.search_depth).unwrap_or_else(|err| {
-                    eprintln!("Error requesting data from nyaa: {}", err);
-                    process::exit(1);
-                })
+                piratebay::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
             },
-        });
+        };
     }
+    drop(tx);
+
+    let mut torrents: Vec<Torrent> = Vec::new();
+    for received_torrents in rx {
+        torrents.extend(received_torrents);
+    }
+
     torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0)));
 
     let magnets = interface::display_torrent_table(&torrents);

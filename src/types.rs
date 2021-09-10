@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct Torrent {
     pub title: String,
@@ -29,7 +30,7 @@ pub struct Settings {
 pub struct UserParameters {
     pub websites: Vec<Website>,
     pub directory: Rc<PathBuf>,
-    pub search_query: String,
+    pub search_query: Arc<String>,
     pub search_depth: u32,
     pub autodownload: bool,
 }

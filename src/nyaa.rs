@@ -1,11 +1,28 @@
+use std::sync::{Arc, mpsc::Sender};
+use std::thread;
+
 use scraper::{Html, Selector, element_ref::ElementRef};
 
 use crate::Torrent;
 
-pub fn query(query: &str, depth: u32) -> Result<Vec<Torrent>, reqwest::Error> {
+pub fn query(tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) -> () {
+    for page in 1..=depth {
+        let t_tx = Sender::clone(&tx);
+        let t_query = Arc::clone(&query);
+
+        thread::spawn(move || {
+            let torrents = fetch_page_results(&t_query, page).unwrap_or_else(|err| {
+                eprintln!("Error requesting data from nyaa: {}", err);
+                vec![]
+            });
+
+            t_tx.send(torrents).unwrap(); 
+        });
+    }
+}
+pub fn fetch_page_results(query: &str, page_number: u32) -> Result<Vec<Torrent>, reqwest::Error> {
     let mut results = Vec::new();
 
-    for page_number in 1..=depth {
     let formatted_query = query.replace(" ", "+");
     let url = format!("https://nyaa.si/?f=0&c=0_0&q={}&s=seeders&o=desc&p={}", formatted_query, page_number);
     let body = reqwest::blocking::get(&url)?.text()?;
@@ -37,7 +54,6 @@ pub fn query(query: &str, depth: u32) -> Result<Vec<Torrent>, reqwest::Error> {
             size,
             seeders,
         });
-    }
     }
 
     Ok(results)

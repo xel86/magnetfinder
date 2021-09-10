@@ -2,6 +2,7 @@ use std::io;
 use std::path::PathBuf;
 use std::process;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use comfy_table::{ Table, ContentArrangement };
 use comfy_table::presets::UTF8_FULL;
@@ -108,10 +109,10 @@ impl UserParameters {
         UserParameters {
             websites,
             directory,
-            search_query: String::from(args.value_of("query").unwrap_or_else(|| {
+            search_query: Arc::new(String::from(args.value_of("query").unwrap_or_else(|| {
                 eprintln!("Must provide a valid search query (-q/--query \"search term\")");
                 process::exit(1);
-            })),
+            }))),
             search_depth,
             autodownload: args.is_present("download"),
         }
@@ -159,7 +160,7 @@ impl UserParameters {
         }
     }
 
-    fn get_search_query() -> String {
+    fn get_search_query() -> Arc<String> {
         let mut input = String::new();
         println!("Search query: ");
 
@@ -167,7 +168,7 @@ impl UserParameters {
             .read_line(&mut input)
             .expect("io error: couldn't read search query input");
 
-        String::from(input.trim())
+        Arc::new(String::from(input.trim()))
     }
 }
 

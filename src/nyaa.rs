@@ -5,7 +5,7 @@ use scraper::{Html, Selector, element_ref::ElementRef};
 
 use crate::Torrent;
 
-pub fn query(tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) -> () {
+pub fn query(tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
     for page in 1..=depth {
         let t_tx = Sender::clone(&tx);
         let t_query = Arc::clone(&query);
@@ -20,6 +20,7 @@ pub fn query(tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) -> () {
         });
     }
 }
+
 pub fn fetch_page_results(query: &str, page_number: u32) -> Result<Vec<Torrent>, reqwest::Error> {
     let mut results = Vec::new();
 
@@ -67,7 +68,7 @@ fn get_title(table_row: &ElementRef) -> Option<String> {
         None => return None,
     };
 
-    if title == "" { return None }
+    if title.is_empty() { return None }
 
     Some(String::from(title))
 }

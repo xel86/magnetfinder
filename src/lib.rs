@@ -51,17 +51,14 @@ pub fn run(args: ArgMatches) {
 }
 
 fn download_torrent(dir: &str, magnet: &str) {
-    match process::Command::new("sudo")
+    if let Err(err) = process::Command::new("sudo")
         .arg("deluge-console")
         .arg("add")
         .arg("-p")
         .arg(dir)
         .arg(magnet)
         .status() {
-            Err(err) => {
-                eprintln!("Failed to autodownload using torrent client selected: {}", err);
-                println!("{}", magnet);
-            },
-            Ok(_) => (),
+            eprintln!("Failed to autodownload using torrent client selected: {}", err);
+            println!("{}", magnet);
         }
 }

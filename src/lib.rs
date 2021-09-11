@@ -1,8 +1,8 @@
-mod nyaa;
-mod piratebay;
-mod interface;
-mod types;
-mod settings;
+pub mod nyaa;
+pub mod piratebay;
+pub mod interface;
+pub mod types;
+pub mod settings;
 
 use std::process;
 use std::cmp::Reverse;

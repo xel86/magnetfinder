@@ -46,10 +46,9 @@ impl Media {
 impl UserParameters {
     pub fn get_params(args: ArgMatches) -> UserParameters {
         if !args_present(&args) {
-            return UserParameters::prompt();
-        }
-        else {
-            return UserParameters::fetch(args);
+            UserParameters::prompt()
+        } else {
+            UserParameters::fetch(args)
         }
     }
 
@@ -82,7 +81,7 @@ impl UserParameters {
         if args.is_present("piratebay") { websites.push(Website::Piratebay); }
         if args.is_present("all") { websites = Website::new("all").unwrap(); }
         
-        if websites.len() < 1 {
+        if websites.is_empty() {
             eprintln!("Must select website to scrape from, -n for nyaa, -p for piratebay, -a for all");
             process::exit(1);
         }
@@ -186,10 +185,9 @@ pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String>{
         let table = update_torrent_table(&mut table, &torrents[0..torrents_shown]);
         println!("{}", table);
 
-        match prompt_torrent_selection(&torrents) {
-            Some(m) => return m,
-            None => (),
-        };
+        if let Some(mag) = prompt_torrent_selection(&torrents) {
+            return mag;
+        }
 
         torrents_shown =
         if torrents.len() < torrents_shown+20 { torrents.len() } else { torrents_shown+20 };
@@ -214,8 +212,8 @@ pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Option<Vec<&String>> {
             .read_line(&mut selections)
             .expect("io error: couldn't read torrent selection input");
         
-        let selections: Vec<&str> = selections.trim().split(" ").collect();
-        if selections.len() < 1 {
+        let selections: Vec<&str> = selections.trim().split(' ').collect();
+        if selections.is_empty() {
             println!("Please input one or multiple numbers seperated by a space to select torrent(s)");
             continue;
         }
@@ -250,7 +248,7 @@ fn collect_magnet_links<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Res
             Ok(num) => num,
         };
 
-        if num > torrents.len() || num <= 0 {
+        if num > torrents.len() || num == 0 {
             return Err("Input out of range");
         }
 

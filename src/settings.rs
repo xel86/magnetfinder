@@ -86,10 +86,7 @@ impl Settings {
         let tvshow_dir = Settings::validate_set_path(s.get::<String>("tvshow_dir"), &mut fallback_dir);
         let movie_dir = Settings::validate_set_path(s.get::<String>("movie_dir"), &mut fallback_dir);
 
-        let autodownload = match s.get_bool("autodownload") {
-            Ok(v) => v,
-            Err(_) => false,
-        };
+        let autodownload = s.get_bool("autodownload").unwrap_or(false);
         
         Ok(Settings {
             anime_dir,

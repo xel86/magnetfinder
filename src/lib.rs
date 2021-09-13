@@ -54,7 +54,7 @@ fn download_torrent(dir: &str, magnet: &str) {
     if let Err(err) = process::Command::new("sudo")
         .arg("deluge-console")
         .arg("add")
-        .arg("-p")
+        .arg("--path")
         .arg(dir)
         .arg(magnet)
         .status() {

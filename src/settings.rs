@@ -25,6 +25,7 @@ impl Default for Settings {
             anime_dir: Rc::clone(&downloads_dir),
             tvshow_dir: Rc::clone(&downloads_dir),
             movie_dir: Rc::clone(&downloads_dir),
+            default_directory: Rc::clone(&downloads_dir),
             autodownload: false,
         }
     }
@@ -35,9 +36,19 @@ pub struct DownloadDirCache {
 }
 
 impl DownloadDirCache {
-    pub fn new() -> DownloadDirCache {
+    pub fn new(default_path: Result<String, ConfigError>) -> DownloadDirCache {
+        let value = match default_path {
+            Ok(v) => {
+                let path = Rc::new(PathBuf::from(v));
+                if !path.is_dir() {
+                    return DownloadDirCache { value: None };
+                }
+                Some(path)
+            },
+            Err(_) => None,
+        };
         DownloadDirCache {
-            value: None,
+            value
         }
     }
 
@@ -80,7 +91,7 @@ impl Settings {
         let mut s = Config::default();
         s.merge(File::with_name("Settings"))?;
 
-        let mut fallback_dir = DownloadDirCache::new();
+        let mut fallback_dir = DownloadDirCache::new(s.get::<String>("default_directory"));
 
         let anime_dir = Settings::validate_set_path(s.get::<String>("anime_dir"), &mut fallback_dir);
         let tvshow_dir = Settings::validate_set_path(s.get::<String>("tvshow_dir"), &mut fallback_dir);
@@ -92,6 +103,7 @@ impl Settings {
             anime_dir,
             tvshow_dir,
             movie_dir,
+            default_directory: fallback_dir.value(),
             autodownload,
         })
     }

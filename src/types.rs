@@ -24,6 +24,7 @@ pub struct Settings {
     pub anime_dir: Rc<PathBuf>,
     pub tvshow_dir: Rc<PathBuf>,
     pub movie_dir: Rc<PathBuf>,
+    pub default_directory: Rc<PathBuf>,
     pub autodownload: bool,
 }
 

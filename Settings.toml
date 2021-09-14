@@ -1,9 +1,16 @@
-# Change directories to where you want each type of media to download to
-# The default directory is your downloads folder
+# Change directories to where you want each type of media to download to,
+# or where default directory is in arg mode
+
 # use absolute paths (/home/user/Downloads/ , C:\..\user\downloads\ )
+# directory priority: anime/tvshow/movie -> default_directory -> /home/user/Downloads
+
+#[ Media Directories (Interactive Mode) ]
 anime_dir = ""
 tvshow_dir = ""
 movie_dir = ""
+
+#[ Default Directory (Arg & Interactive Mode) ]
+default_directory = ""
 
 # Autodownload takes the magnet link selected and
 # uses the torrent-client chosen to begin downloading the torrent

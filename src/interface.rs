@@ -10,7 +10,6 @@ use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use clap::ArgMatches;
 
 use crate::{ Torrent, UserParameters, Website, Media, Settings};
-use crate::settings::DownloadDirCache;
 
 impl Website {
     fn new(s: &str) -> Result<Vec<Website>, &'static str> {
@@ -80,22 +79,28 @@ impl UserParameters {
         if args.is_present("nyaa") { websites.push(Website::Nyaa); }
         if args.is_present("piratebay") { websites.push(Website::Piratebay); }
         if args.is_present("all") { websites = Website::new("all").unwrap(); }
+
+        let config_settings = match Settings::fetch() {
+            Ok(s) => s,
+            Err(_) => {
+                Settings::default()
+            },
+        };
         
         if websites.is_empty() {
             eprintln!("Must select website to scrape from, -n for nyaa, -p for piratebay, -a for all");
             process::exit(1);
         }
 
-        let mut default_directory = DownloadDirCache::new();
         let directory = match args.value_of("directory") {
             Some(d) => {
                 let mut path = Rc::new(PathBuf::from(d));
                 if !path.is_dir() {
-                    path = default_directory.value();
+                    path = config_settings.default_directory
                 }
                 path
             }
-            None => default_directory.value(),
+            None => config_settings.default_directory,
         };
 
         let search_depth: u32 = match args.value_of("depth") {
@@ -105,13 +110,15 @@ impl UserParameters {
             None => 1,
         };
 
+        let search_query = Arc::new(String::from(args.value_of("query").unwrap_or_else(|| {
+            eprintln!("Must provide a valid search query (-q/--query \"search term\")");
+            process::exit(1);
+        })));
+
         UserParameters {
             websites,
             directory,
-            search_query: Arc::new(String::from(args.value_of("query").unwrap_or_else(|| {
-                eprintln!("Must provide a valid search query (-q/--query \"search term\")");
-                process::exit(1);
-            }))),
+            search_query,
             search_depth,
             autodownload: args.is_present("download"),
         }
@@ -262,5 +269,6 @@ fn args_present(args: &ArgMatches) -> bool {
     args.is_present("piratebay") ||
     args.is_present("all") ||
     args.is_present("download") ||
-    args.is_present("directory")
+    args.is_present("directory") ||
+    args.is_present("query")
 }

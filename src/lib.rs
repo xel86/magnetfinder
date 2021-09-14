@@ -37,7 +37,7 @@ pub fn run(args: ArgMatches) {
     torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0)));
 
     let magnets = interface::display_torrent_table(&torrents);
-    
+
     if user_parameters.autodownload {
         for m in magnets {
             download_torrent(user_parameters.directory.to_str().unwrap(), &m);

@@ -3,6 +3,7 @@ use std::process;
 use std::fs;
 use std::io::{self, Write};
 use std::rc::Rc;
+use std::env;
 
 use config::{ConfigError, Config, File};
 use dirs::home_dir;
@@ -89,7 +90,14 @@ impl Settings {
 
     pub fn fetch() -> Result<Settings, ConfigError> {
         let mut s = Config::default();
-        s.merge(File::with_name("Settings"))?;
+        match env::current_exe() {
+            Ok(mut exe_path) => {
+                exe_path.pop();
+                exe_path.push("Settings.toml");
+                s.merge(File::from(exe_path))?;
+            },
+            Err(_) => { s.merge(File::with_name("Settings"))?; }
+        };
 
         let mut fallback_dir = DownloadDirCache::new(s.get::<String>("default_directory"));
 
@@ -109,15 +117,30 @@ impl Settings {
     }
 
     pub fn generate_settings_file() -> Result<(), io::Error>{
-        let mut file = fs::File::create("Settings.toml")?;
+        let mut file;
+
+        if let Ok(mut exe_path) = env::current_exe() {
+            exe_path.pop(); 
+            exe_path.push("Settings.toml");
+            file = fs::File::create(exe_path)?;
+        } else {
+            file = fs::File::create("Settings.toml")?;
+        }
 
         file.write_all(
-b"# Change directories to where you want each type of media to download to
-# The default directory is your downloads folder
+b"# Change directories to where you want each type of media to download to,
+# or where default directory is in arg mode
+
 # use absolute paths (/home/user/Downloads/ , C:\\..\\user\\downloads\\ )
+# directory priority: anime/tvshow/movie -> default_directory -> /home/user/Downloads
+
+#[ Media Directories (Interactive Mode) ]
 anime_dir = \"\"
 tvshow_dir = \"\"
 movie_dir = \"\"
+
+#[ Default Directory (Arg & Interactive Mode) ]
+default_directory = \"\"
 
 # Autodownload takes the magnet link selected and
 # uses the torrent-client chosen to begin downloading the torrent

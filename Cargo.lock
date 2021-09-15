@@ -216,10 +216,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dirs"
+name = "directories"
 version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30baa043103c9d0c2a57cf537cc2f35623889dc0d405e6c3cccfadbc81c71309"
+checksum = "e69600ff1703123957937708eb27f7a564e48885c537782722ed0ba3189ce1d7"
 dependencies = [
  "dirs-sys",
 ]
@@ -636,7 +636,7 @@ dependencies = [
  "clap",
  "comfy-table",
  "config",
- "dirs",
+ "directories",
  "reqwest",
  "scraper",
 ]

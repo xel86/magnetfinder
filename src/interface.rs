@@ -55,11 +55,11 @@ impl UserParameters {
     fn prompt() -> UserParameters {
         let settings = match Settings::fetch() {
             Ok(s) => s,
-            Err(e) => {
-                eprintln!("error reading settings file: {}\ngenerating default Settings.toml\n", e);
+            Err(_) => {
                 Settings::generate_settings_file().unwrap_or_else(|err| {
                     eprintln!("error generating new settings file: {}\n", err);
                 });
+                eprintln!("Generated default Settings.toml");
                 Settings::default()
             },
         };
@@ -83,6 +83,10 @@ impl UserParameters {
         let config_settings = match Settings::fetch() {
             Ok(s) => s,
             Err(_) => {
+                Settings::generate_settings_file().unwrap_or_else(|err| {
+                    eprintln!("error generating new settings file: {}\n", err);
+                });
+                eprintln!("Generated default Settings.toml");
                 Settings::default()
             },
         };

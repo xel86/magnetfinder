@@ -1,5 +1,5 @@
 # magnetfinder
-grabs magnet links for selected torrents through CLI
+Multi-threaded CLI torrent aggregator; scrapes torrent results from multiple websites and delivers them into a table in your terminal!
 
 Supported Websites:
 - nyaa 
@@ -8,27 +8,36 @@ Supported Websites:
 Supported torrent client for autodownloads:
 - deluge-console
 
-![](https://i.imgur.com/AVu6GnT.png)
-
-## Installation (from source)
-First install rust if you haven't already: https://www.rust-lang.org/tools/install
-
-Download this repository onto your system using ```git clone https://github.com/bleusakura/magnetfinder.git```
-
-Navigate to the directory and run ```cargo run``` for interface use, or ```cargo build --release``` to create a binary to use command line arguments.
-
-## Installation (from binary)
-Download the binary from the releases section that correspondes to your system's architecture.
-
-Once downloaded, simply run ```./magnetfinder``` from the directory that you downloaded the binary to.
+![](https://i.imgur.com/piuGz7w.png)
 
 ## Usage
-After selecting whether nyaa or piratebay, specify if its a movie or series and give a search query<br/>
-In the terminal a table will be presented with the top 20 torrent links sorted by seeders from that website<br/>
-Select which torrent by number, and it will either start the download or return the magnet link based on configuration<br/>
 
-## Configure
-Edit the Settings.toml file to change the default directories, autodownload status<br/>
-Enabling automatic torrent downloads allows deluge-console on linux to run after torrent selection<br/>
+Running magnetfinder without any arguments will launch interactive mode, prompting for similar information set by flags.
 
-Current default directory is your Downloads folder, default status for automatic torrent downloads is false, and default torrent client is deluge-console
+#### Flags/Arguments<br>
+```-q, --query <query>``` search query to use<br>
+```-n, --nyaa``` scrape nyaa for torrents<br>
+```-p, --piratebay``` scrape piratebay for torrents<br>
+```-a, --all``` scrape all available websites together<br>
+```-d, --download``` autodownload the torrent(s) selected<br>
+```--depth <depth>```  specifies how many pages to search through for each website, default is 1<br>
+```--dir <directory>``` directory to download torrent if autodownload was toggled<br>
+  
+#### Configuration
+
+Settings.toml (for setting default behavior, such as download directories & autodownload) is located in an OS specific directory:<br>
+```~/.config/magnetfinder/``` on Linux<br>
+```/AppData/Roaming/magnetfinder``` on Windows<br>
+```/Library/Application Support/magnetfinder/``` on macOS<br>
+  
+
+## Installation
+First install rust if you haven't already: https://www.rust-lang.org/tools/install<br>
+
+From Cargo/Crate: ```cargo install magnetfinder```<br>
+
+From Source: 
+- ```git clone https://github.com/bleusakura/magnetfinder.git``` then ```cargo build --release```
+- After building, the binary will be located in ```./target/release/```, which can then be moved elsewhere.
+
+You can also decide to skip compiling and download a binary from the [releases section](https://github.com/bleusakura/magnetfinder/releases)

@@ -3,6 +3,12 @@ name = "magnetfinder"
 version = "0.1.0"
 authors = ["bleusakura"]
 edition = "2018"
+license = "GPL-3.0"
+homepage = "https://github.com/bleusakura/magnetfinder"
+repository = "https://github.com/bleusakura/magnetfinder"
+description = "Multi-threaded CLI torrent scraper & aggregator"
+keywords = ["cli", "torrent"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -19,8 +19,6 @@ impl Torrent {
             return int_approximation;
         }
 
-        // byte suffix modifiers are obviously incorrect, this is simplified because we only need it 
-        // for ordering, not getting the actual byte size
         let base: i64 = 2;
         let byte_modifier = match split[1] {
             "TiB" => base.pow(40),

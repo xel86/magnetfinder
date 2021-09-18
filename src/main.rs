@@ -48,6 +48,12 @@ fn main() {
                 .long("depth")
                 .takes_value(true)
         )
+        .arg(
+            Arg::with_name("sort")
+                .help("specifies what to sort the torrent table by (size/seeds)")
+                .long("sort")
+                .takes_value(true)
+        )
         .get_matches();
 
     magnetfinder::run(matches);

@@ -22,6 +22,7 @@ Running magnetfinder without any arguments will launch interactive mode, prompti
 ```-d, --download``` autodownload the torrent(s) selected<br>
 ```--depth <depth>```  specifies how many pages to search through for each website, default is 1<br>
 ```--dir <directory>``` directory to download torrent if autodownload was toggled<br>
+```--sort <seeds/size>``` allows you to specifiy if the torrent table is sorted by seeders or size<br>
   
 #### Configuration
 

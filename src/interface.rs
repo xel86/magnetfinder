@@ -9,7 +9,7 @@ use comfy_table::presets::UTF8_FULL;
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use clap::ArgMatches;
 
-use crate::{ Torrent, UserParameters, Website, Media, Settings};
+use crate::{ Torrent, UserParameters, Website, Media, Sort, Settings};
 
 impl Website {
     fn new(s: &str) -> Result<Vec<Website>, &'static str> {
@@ -42,6 +42,15 @@ impl Media {
     }
 }
 
+impl Sort {
+    fn new(s: &str) -> Sort {
+        match s.to_lowercase().as_str() {
+            "size" => Sort::Size,
+            _ => Sort::Seeds,
+        }
+    }
+}
+
 impl UserParameters {
     pub fn get_params(args: ArgMatches) -> UserParameters {
         if !args_present(&args) {
@@ -69,6 +78,7 @@ impl UserParameters {
             directory: UserParameters::get_media().path(&settings),
             search_query: UserParameters::get_search_query(),
             search_depth: 1,
+            sort_preference: Sort::new("seeds"),
             autodownload: settings.autodownload,
         }
     }
@@ -119,11 +129,14 @@ impl UserParameters {
             process::exit(1);
         })));
 
+        let sort_preference = Sort::new(args.value_of("sort").unwrap_or("seeds"));
+
         UserParameters {
             websites,
             directory,
             search_query,
             search_depth,
+            sort_preference,
             autodownload: args.is_present("download"),
         }
     }

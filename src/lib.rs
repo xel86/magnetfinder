@@ -10,7 +10,7 @@ use std::sync::mpsc;
 
 use clap::ArgMatches;
 
-use types::{Settings, UserParameters, Website, Media, Torrent};
+use types::{Settings, UserParameters, Website, Media, Sort, Torrent};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);
@@ -34,7 +34,10 @@ pub fn run(args: ArgMatches) {
         torrents.extend(received_torrents);
     }
 
-    torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0)));
+    match user_parameters.sort_preference {
+        Sort::Size => torrents.sort_by_key(|t| Reverse(t.get_size_as_i64())),
+        Sort::Seeds => torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0))),
+    }
 
     let magnets = interface::display_torrent_table(&torrents);
 

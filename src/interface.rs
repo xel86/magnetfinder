@@ -16,7 +16,8 @@ impl Website {
         match s.trim().to_lowercase().as_str() {
             "nyaa" => Ok(vec![Website::Nyaa]),
             "piratebay" => Ok(vec![Website::Piratebay]),
-            "all" => Ok(vec![Website::Nyaa, Website::Piratebay]),
+            "yts" => Ok(vec![Website::YTS]),
+            "all" => Ok(vec![Website::Nyaa, Website::Piratebay, Website::YTS]),
             _ => Err("Unknown website, supported sites: nyaa, piratebay"),
         }
     }
@@ -88,6 +89,7 @@ impl UserParameters {
         let mut websites: Vec<Website> = Vec::new();
         if args.is_present("nyaa") { websites.push(Website::Nyaa); }
         if args.is_present("piratebay") { websites.push(Website::Piratebay); }
+        if args.is_present("yts") { websites.push(Website::YTS); }
         if args.is_present("all") { websites = Website::new("all").unwrap(); }
 
         let config_settings = match Settings::fetch() {
@@ -144,7 +146,7 @@ impl UserParameters {
     fn get_websites() -> Vec<Website> {
         loop {
             let mut input = String::new();
-            println!("Website(s) to search from? (nyaa, piratebay, all)");
+            println!("Website(s) to search from? (nyaa, piratebay, yts, all)");
 
             io::stdin()
                 .read_line(&mut input)

@@ -18,6 +18,12 @@ fn main() {
                 .long("piratebay")
         )
         .arg(
+            Arg::with_name("yts")
+                .help("get torrents from YIFY/YTS")
+                .short("y")
+                .long("yts")
+        )
+        .arg(
             Arg::with_name("all")
                 .help("scrape from all available implemented websites")
                 .short("a")

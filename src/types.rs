@@ -22,9 +22,13 @@ impl Torrent {
         let base: i64 = 2;
         let byte_modifier = match split[1] {
             "TiB" => base.pow(40),
+            "TB" => base.pow(40),
             "GiB" => base.pow(30),
+            "GB" => base.pow(30),
             "MiB" => base.pow(20),
+            "MB" => base.pow(20),
             "KiB" => base.pow(10),
+            "KB" => base.pow(10),
             "Bytes" => 1,
             _ => 1,
         };

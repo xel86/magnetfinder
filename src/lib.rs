@@ -1,5 +1,6 @@
 pub mod nyaa;
 pub mod piratebay;
+pub mod yts;
 pub mod interface;
 pub mod types;
 pub mod settings;
@@ -25,6 +26,9 @@ pub fn run(args: ArgMatches) {
             Website::Piratebay => { 
                 piratebay::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
             },
+            Website::YTS => {
+                yts::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
+            }
         };
     }
     drop(tx);

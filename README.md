@@ -4,6 +4,7 @@ Multi-threaded CLI torrent aggregator; scrapes torrent results from multiple web
 Supported Websites:
 - nyaa 
 - piratebay
+- YTS
 
 Supported torrent client for autodownloads:
 - deluge-console
@@ -18,6 +19,7 @@ Running magnetfinder without any arguments will launch interactive mode, prompti
 ```-q, --query <query>``` search query to use<br>
 ```-n, --nyaa``` scrape nyaa for torrents<br>
 ```-p, --piratebay``` scrape piratebay for torrents<br>
+```-y, --yts``` get torrents from YIFY/YTS<br>
 ```-a, --all``` scrape all available websites together<br>
 ```-d, --download``` autodownload the torrent(s) selected<br>
 ```--depth <depth>```  specifies how many pages to search through for each website, default is 1<br>

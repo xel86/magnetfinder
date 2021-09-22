@@ -1,6 +1,6 @@
 [package]
 name = "magnetfinder"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["bleusakura"]
 edition = "2018"
 license = "GPL-3.0"

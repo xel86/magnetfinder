@@ -60,6 +60,12 @@ fn main() {
                 .long("sort")
                 .takes_value(true)
         )
+        .arg(
+            Arg::with_name("proxy")
+                .help("sets a proxy to use when making requests to torrent websites (socks5)")
+                .long("proxy")
+                .takes_value(true)
+        )
         .get_matches();
 
     magnetfinder::run(matches);

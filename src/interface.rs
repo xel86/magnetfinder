@@ -80,6 +80,7 @@ impl UserParameters {
             search_query: UserParameters::get_search_query(),
             search_depth: 1,
             sort_preference: Sort::new("seeds"),
+            proxy: Arc::new(settings.default_proxy),
             autodownload: settings.autodownload,
         }
     }
@@ -133,12 +134,18 @@ impl UserParameters {
 
         let sort_preference = Sort::new(args.value_of("sort").unwrap_or("seeds"));
 
+        let proxy = match args.value_of("proxy") {
+            Some(p) => Arc::new(String::from(p)),
+            None => Arc::new(config_settings.default_proxy),
+        };
+
         UserParameters {
             websites,
             directory,
             search_query,
             search_depth,
             sort_preference,
+            proxy,
             autodownload: args.is_present("download"),
         }
     }

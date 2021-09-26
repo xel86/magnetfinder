@@ -7,27 +7,32 @@ pub mod settings;
 
 use std::process;
 use std::cmp::Reverse;
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 
 use clap::ArgMatches;
+use reqwest::{blocking::Client};
 
 use types::{Settings, UserParameters, Website, Media, Sort, Torrent};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);
 
-    let (tx, rx) = mpsc::channel();
+    let client = Arc::new(match build_reqwest_client(&user_parameters.proxy) {
+        Ok(client) => client,
+        Err(_) => Client::new(),
+    });
 
+    let (tx, rx) = mpsc::channel();
     for website in user_parameters.websites {
         match website {
             Website::Nyaa => {
-                nyaa::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
+                nyaa::query(&client, tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
             },
             Website::Piratebay => { 
-                piratebay::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
+                piratebay::query(&client, tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
             },
             Website::YTS => {
-                yts::query(tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
+                yts::query(&client, tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
             }
         };
     }
@@ -54,6 +59,18 @@ pub fn run(args: ArgMatches) {
         for m in magnets {
             println!("{}", m);
         }
+    }
+}
+
+fn build_reqwest_client(proxy: &str) -> Result<Client, reqwest::Error> {
+    if proxy.is_empty() {
+        Client::builder()
+            .build()
+    }
+    else {
+        Client::builder()
+            .proxy(reqwest::Proxy::all(proxy)?)
+            .build()
     }
 }
 

@@ -2,16 +2,18 @@ use std::sync::{Arc, mpsc::Sender};
 use std::thread;
 
 use scraper::{Html, Selector, element_ref::ElementRef};
+use reqwest::{blocking::Client};
 
 use crate::Torrent;
 
-pub fn query(tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
+pub fn query(client: &Arc<Client>, tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
     for page in 1..=depth {
         let t_tx = Sender::clone(&tx);
+        let t_client = Arc::clone(&client);
         let t_query = Arc::clone(&query);
 
         thread::spawn(move || {
-            let torrents = fetch_page_results(&t_query, page).unwrap_or_else(|err| {
+            let torrents = fetch_page_results(&t_client, &t_query, page).unwrap_or_else(|err| {
                 eprintln!("Error requesting data from piratebay: {}", err);
                 vec![]
             });
@@ -21,12 +23,12 @@ pub fn query(tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
     }
 }
 
-pub fn fetch_page_results(query: &str, page_number: u32) -> Result<Vec<Torrent>, reqwest::Error> {
+pub fn fetch_page_results(client: &Client, query: &str, page_number: u32) -> Result<Vec<Torrent>, reqwest::Error> {
     let mut results = Vec::new();
 
     let formatted_query = query.replace(" ", "%20");
     let url = format!("https://www.tpb.party/search/{}/{}/99/0", formatted_query, page_number);
-    let body = reqwest::blocking::get(&url)?.text()?;
+    let body = client.get(&url).send()?.text()?;
 
     let document = Html::parse_document(&body);
     let selector = Selector::parse("tbody tr").unwrap();

@@ -24,6 +24,7 @@ impl Default for Settings {
                 tvshow_dir: Rc::clone(&downloads_dir),
                 movie_dir: Rc::clone(&downloads_dir),
                 default_directory: Rc::clone(&downloads_dir),
+                default_proxy: String::from(""), 
                 autodownload: false,
             }
         } else {
@@ -118,12 +119,14 @@ impl Settings {
         let movie_dir = Settings::validate_path(s.get::<String>("movie_dir"), &mut fallback_dir);
 
         let autodownload = s.get_bool("autodownload").unwrap_or(false);
+        let default_proxy = s.get::<String>("default_proxy").unwrap_or(String::from(""));
         
         Ok(Settings {
             anime_dir,
             tvshow_dir,
             movie_dir,
             default_directory: fallback_dir.value(),
+            default_proxy,
             autodownload,
         })
     }
@@ -170,7 +173,11 @@ default_directory = \"\"
 
 # Autodownload takes the magnet link selected and
 # uses the torrent-client chosen to begin downloading the torrent
-autodownload = false"
+autodownload = false
+
+# setting a default proxy allows you to tunnel all scraping from torrent websites through
+# this set proxy by default. If using a socks5 proxy, format ip like so: socks5://192.168.1.1:9000
+default_proxy = \"\""
         )?;
 
         Ok(())

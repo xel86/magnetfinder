@@ -62,7 +62,7 @@ fn main() {
         )
         .arg(
             Arg::with_name("proxy")
-                .help("sets a proxy to use when making requests to torrent websites (socks5)")
+                .help("sets a proxy to use when making requests to torrent websites")
                 .long("proxy")
                 .takes_value(true)
         )

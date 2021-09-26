@@ -25,6 +25,7 @@ Running magnetfinder without any arguments will launch interactive mode, prompti
 ```--depth <depth>```  specifies how many pages to search through for each website, default is 1<br>
 ```--dir <directory>``` directory to download torrent if autodownload was toggled<br>
 ```--sort <seeds/size>``` allows you to specifiy if the torrent table is sorted by seeders or size<br>
+```--proxy <proxy url>``` allows you to set a proxy to use when making web requests to torrent websites & api<br>
   
 #### Configuration
 

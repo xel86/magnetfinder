@@ -62,6 +62,7 @@ pub struct Settings {
     pub tvshow_dir: Rc<PathBuf>,
     pub movie_dir: Rc<PathBuf>,
     pub default_directory: Rc<PathBuf>,
+    pub default_proxy: String,
     pub autodownload: bool,
 }
 
@@ -71,5 +72,6 @@ pub struct UserParameters {
     pub search_query: Arc<String>,
     pub search_depth: u32,
     pub sort_preference: Sort,
+    pub proxy: Arc<String>,
     pub autodownload: bool,
 }

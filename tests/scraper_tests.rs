@@ -2,9 +2,11 @@ use magnetfinder::nyaa;
 use magnetfinder::piratebay;
 use magnetfinder::yts;
 
+use ureq::Agent;
+
 #[test]
 fn nyaa_produces_results() {
-    let results = nyaa::fetch_page_results("episode", 1).unwrap();
+    let results = nyaa::fetch_page_results(&Agent::new(), "episode", 1).unwrap();
     
     assert!(results.len() > 0, "returned torrent vector was empty");
 
@@ -16,7 +18,7 @@ fn nyaa_produces_results() {
 
 #[test]
 fn piratebay_produces_results() {
-    let results = piratebay::fetch_page_results("episode", 1).unwrap();
+    let results = piratebay::fetch_page_results(&Agent::new(), "episode", 1).unwrap();
     
     assert!(results.len() > 0, "returned torrent vector was empty");
 
@@ -28,7 +30,7 @@ fn piratebay_produces_results() {
 
 #[test]
 fn yts_produces_results() {
-    let results = yts::fetch_page_results("star", 1).unwrap();
+    let results = yts::fetch_page_results(&Agent::new(), "star", 1).unwrap();
     
     assert!(results.len() > 0, "returned torrent vector was empty");
 

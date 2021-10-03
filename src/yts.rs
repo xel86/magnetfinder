@@ -1,4 +1,4 @@
-use std::sync::{Arc, mpsc::Sender};
+use std::sync::{mpsc::Sender, Arc};
 use std::thread;
 
 use serde::Deserialize;
@@ -18,7 +18,7 @@ struct YTSTorrent {
     size: String,
     size_bytes: usize,
     date_uploaded: String,
-    date_uploaded_unix: i64
+    date_uploaded_unix: i64,
 }
 
 #[allow(dead_code)]
@@ -44,7 +44,7 @@ struct YTSMovie {
     medium_cover_image: String,
     large_cover_image: String,
     state: String,
-    torrents: Vec<YTSTorrent>
+    torrents: Vec<YTSTorrent>,
 }
 
 #[allow(dead_code)]
@@ -53,7 +53,7 @@ struct YTSData {
     movie_count: usize,
     limit: usize,
     page_number: usize,
-    movies: Vec<YTSMovie>
+    movies: Vec<YTSMovie>,
 }
 
 #[allow(dead_code)]
@@ -61,7 +61,7 @@ struct YTSData {
 struct YTSResponse {
     status: String,
     status_message: String,
-    data: YTSData
+    data: YTSData,
 }
 
 pub fn query(client: &Arc<Agent>, tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
@@ -81,19 +81,22 @@ pub fn query(client: &Arc<Agent>, tx: Sender<Vec<Torrent>>, query: &Arc<String>,
                 vec![]
             });
 
-            t_tx.send(torrents).unwrap(); 
+            t_tx.send(torrents).unwrap();
         });
     }
 }
 
-pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Result<Vec<Torrent>, ureq::Error> {
+pub fn fetch_page_results(
+    client: &Agent,
+    query: &str,
+    page_number: u32,
+) -> Result<Vec<Torrent>, ureq::Error> {
     let mut results = Vec::new();
 
     let formatted_query = query.replace(" ", "+");
     let url = format!(
         "https://yts.mx/api/v2/list_movies.json?query_term={}&page={}",
-        formatted_query,
-        page_number
+        formatted_query, page_number
     );
     let body = client.get(&url).call()?.into_json::<YTSResponse>()?;
 
@@ -102,8 +105,8 @@ pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Resu
         let slug = movie.slug;
 
         for torrent in movie.torrents {
-            results.push(Torrent { 
-                title: title.clone(), 
+            results.push(Torrent {
+                title: title.clone(),
                 magnet: make_magnet(torrent.hash, slug.clone()),
                 size: torrent.size,
                 seeders: torrent.seeds.to_string(),
@@ -124,8 +127,12 @@ fn make_magnet(info_hash: String, name: String) -> String {
         "udp://tracker.opentrackr.org:1337/announce",
         "udp://torrent.gresille.org:80/announce",
         "udp://p4p.arenabg.com:1337",
-        "udp://tracker.leechers-paradise.org:6969"
-    ].join("&tr=");
+        "udp://tracker.leechers-paradise.org:6969",
+    ]
+    .join("&tr=");
 
-    format!("magnet:?xt=urn:btih:{}&dn={}&tr={}", info_hash, name, trackers)
+    format!(
+        "magnet:?xt=urn:btih:{}&dn={}&tr={}",
+        info_hash, name, trackers
+    )
 }

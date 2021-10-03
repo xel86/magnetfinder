@@ -1,7 +1,7 @@
-use std::sync::{Arc, mpsc::Sender};
+use std::sync::{mpsc::Sender, Arc};
 use std::thread;
 
-use scraper::{Html, Selector, element_ref::ElementRef};
+use scraper::{element_ref::ElementRef, Html, Selector};
 use ureq::Agent;
 
 use crate::Torrent;
@@ -18,16 +18,23 @@ pub fn query(client: &Arc<Agent>, tx: Sender<Vec<Torrent>>, query: &Arc<String>,
                 vec![]
             });
 
-            t_tx.send(torrents).unwrap(); 
+            t_tx.send(torrents).unwrap();
         });
     }
 }
 
-pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Result<Vec<Torrent>, ureq::Error> {
+pub fn fetch_page_results(
+    client: &Agent,
+    query: &str,
+    page_number: u32,
+) -> Result<Vec<Torrent>, ureq::Error> {
     let mut results = Vec::new();
 
     let formatted_query = query.replace(" ", "+");
-    let url = format!("https://nyaa.si/?f=0&c=0_0&q={}&s=seeders&o=desc&p={}", formatted_query, page_number);
+    let url = format!(
+        "https://nyaa.si/?f=0&c=0_0&q={}&s=seeders&o=desc&p={}",
+        formatted_query, page_number
+    );
     let body = client.get(&url).call()?.into_string()?;
 
     let document = Html::parse_document(&body);
@@ -51,8 +58,8 @@ pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Resu
             None => continue,
         };
 
-        results.push(Torrent { 
-            title, 
+        results.push(Torrent {
+            title,
             magnet,
             size,
             seeders,
@@ -70,12 +77,14 @@ fn get_title(table_row: &ElementRef) -> Option<String> {
         None => return None,
     };
 
-    if title.is_empty() { return None }
+    if title.is_empty() {
+        return None;
+    }
 
     Some(String::from(title))
 }
 
-fn _get_title_verbose(query: &str, table_row: &ElementRef) -> Option<String> { 
+fn _get_title_verbose(query: &str, table_row: &ElementRef) -> Option<String> {
     let selector = Selector::parse("td[colspan] a").unwrap();
 
     for data in table_row.select(&selector) {

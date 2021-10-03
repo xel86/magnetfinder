@@ -39,7 +39,7 @@ impl Torrent {
 pub enum Website {
     Nyaa,
     Piratebay,
-    YTS
+    YTS,
 }
 
 pub enum Media {

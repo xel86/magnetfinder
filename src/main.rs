@@ -1,4 +1,4 @@
-use clap::{Arg, App};
+use clap::{App, Arg};
 
 fn main() {
     let matches = App::new("Magnetfinder")
@@ -9,62 +9,62 @@ fn main() {
             Arg::with_name("nyaa")
                 .help("scrape nyaa for torrents")
                 .short("n")
-                .long("nyaa")
+                .long("nyaa"),
         )
         .arg(
             Arg::with_name("piratebay")
                 .help("scrape piratebay for torrents")
                 .short("p")
-                .long("piratebay")
+                .long("piratebay"),
         )
         .arg(
             Arg::with_name("yts")
                 .help("get torrents from YIFY/YTS")
                 .short("y")
-                .long("yts")
+                .long("yts"),
         )
         .arg(
             Arg::with_name("all")
                 .help("scrape from all available implemented websites")
                 .short("a")
-                .long("all")
+                .long("all"),
         )
         .arg(
             Arg::with_name("download")
                 .help("autodownload's torrent with selected torrent-client")
                 .short("d")
-                .long("download")
+                .long("download"),
         )
         .arg(
             Arg::with_name("directory")
                 .help("directory to download torrent if autodownload toggled")
                 .long("dir")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("query")
                 .help("search query for desired torrents")
                 .long("query")
                 .short("q")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("depth")
                 .help("specifies how many pages to search, default is 1")
                 .long("depth")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("sort")
                 .help("specifies what to sort the torrent table by (size/seeds)")
                 .long("sort")
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("proxy")
                 .help("sets a proxy to use when making requests to torrent websites")
                 .long("proxy")
-                .takes_value(true)
+                .takes_value(true),
         )
         .get_matches();
 

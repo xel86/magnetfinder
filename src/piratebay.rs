@@ -1,7 +1,7 @@
-use std::sync::{Arc, mpsc::Sender};
+use std::sync::{mpsc::Sender, Arc};
 use std::thread;
 
-use scraper::{Html, Selector, element_ref::ElementRef};
+use scraper::{element_ref::ElementRef, Html, Selector};
 use ureq::Agent;
 
 use crate::Torrent;
@@ -18,16 +18,23 @@ pub fn query(client: &Arc<Agent>, tx: Sender<Vec<Torrent>>, query: &Arc<String>,
                 vec![]
             });
 
-            t_tx.send(torrents).unwrap(); 
+            t_tx.send(torrents).unwrap();
         });
     }
 }
 
-pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Result<Vec<Torrent>, ureq::Error> {
+pub fn fetch_page_results(
+    client: &Agent,
+    query: &str,
+    page_number: u32,
+) -> Result<Vec<Torrent>, ureq::Error> {
     let mut results = Vec::new();
 
     let formatted_query = query.replace(" ", "%20");
-    let url = format!("https://www.tpb.party/search/{}/{}/99/0", formatted_query, page_number);
+    let url = format!(
+        "https://www.tpb.party/search/{}/{}/99/0",
+        formatted_query, page_number
+    );
     let body = client.get(&url).call()?.into_string()?;
 
     let document = Html::parse_document(&body);
@@ -51,8 +58,8 @@ pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Resu
             None => continue,
         };
 
-        results.push(Torrent { 
-            title, 
+        results.push(Torrent {
+            title,
             magnet,
             size,
             seeders,
@@ -70,7 +77,9 @@ fn get_title(table_row: &ElementRef) -> Option<String> {
         None => return None,
     };
 
-    if title.is_empty() { return None }
+    if title.is_empty() {
+        return None;
+    }
 
     Some(title)
 }
@@ -79,13 +88,13 @@ fn get_magnet(table_row: &ElementRef) -> Option<String> {
     let selector = Selector::parse("[alt='Magnet link']").unwrap();
 
     let magnet = match table_row.select(&selector).next() {
-        Some(p) => { match p.parent() {
-            Some(parent) => { match parent.value().as_element().unwrap().attr("href") {
+        Some(p) => match p.parent() {
+            Some(parent) => match parent.value().as_element().unwrap().attr("href") {
                 Some(m) => m,
                 None => return None,
-            }},
+            },
             None => return None,
-        }},
+        },
         None => return None,
     };
 
@@ -107,9 +116,7 @@ fn get_size(table_row: &ElementRef) -> Option<String> {
 
     let split: Vec<&str> = desc.split(", ").collect();
     let size = match split.get(1) {
-        Some(s) => {
-            s.replace("Size ", "").replace("&nbsp;", " ")
-        },
+        Some(s) => s.replace("Size ", "").replace("&nbsp;", " "),
         None => return None,
     };
 

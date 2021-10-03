@@ -1,12 +1,12 @@
-use std::path::PathBuf;
-use std::process;
+use std::env;
 use std::fs;
 use std::io::{self, Write};
+use std::path::PathBuf;
+use std::process;
 use std::rc::Rc;
-use std::env;
 
-use config::{ConfigError, Config, File};
-use directories::{UserDirs, ProjectDirs};
+use config::{Config, ConfigError, File};
+use directories::{ProjectDirs, UserDirs};
 
 use crate::Settings;
 
@@ -24,7 +24,7 @@ impl Default for Settings {
                 tvshow_dir: Rc::clone(&downloads_dir),
                 movie_dir: Rc::clone(&downloads_dir),
                 default_directory: Rc::clone(&downloads_dir),
-                default_proxy: String::from(""), 
+                default_proxy: String::from(""),
                 autodownload: false,
             }
         } else {
@@ -47,12 +47,10 @@ impl DownloadDirCache {
                     return DownloadDirCache { value: None };
                 }
                 Some(path)
-            },
+            }
             Err(_) => None,
         };
-        DownloadDirCache {
-            value
-        }
+        DownloadDirCache { value }
     }
 
     pub fn value(&mut self) -> Rc<PathBuf> {
@@ -61,7 +59,9 @@ impl DownloadDirCache {
             None => {
                 if let Some(user_dirs) = UserDirs::new() {
                     let dir = user_dirs.download_dir().unwrap_or_else(|| {
-                        eprintln!("Error getting downloads directory, falling back to home directory");
+                        eprintln!(
+                            "Error getting downloads directory, falling back to home directory"
+                        );
                         user_dirs.home_dir()
                     });
 
@@ -79,7 +79,10 @@ impl DownloadDirCache {
 }
 
 impl Settings {
-    fn validate_path(path: Result<String, ConfigError>, default: &mut DownloadDirCache) -> Rc<PathBuf> {
+    fn validate_path(
+        path: Result<String, ConfigError>,
+        default: &mut DownloadDirCache,
+    ) -> Rc<PathBuf> {
         match path {
             Ok(v) => {
                 let mut path = Rc::new(PathBuf::from(v));
@@ -87,7 +90,7 @@ impl Settings {
                     path = default.value()
                 }
                 path
-            },
+            }
             Err(_) => default.value(),
         }
     }
@@ -98,7 +101,7 @@ impl Settings {
         if let Some(proj_dirs) = ProjectDirs::from("", "", "magnetfinder") {
             let config_path = proj_dirs.config_dir();
             let mut config_path = config_path.to_path_buf();
-            config_path.push("Settings.toml"); 
+            config_path.push("Settings.toml");
 
             s.merge(File::from(config_path))?;
         } else {
@@ -108,8 +111,10 @@ impl Settings {
                     exe_path.pop();
                     exe_path.push("Settings.toml");
                     s.merge(File::from(exe_path))?;
-                },
-                Err(_) => { s.merge(File::with_name("Settings"))?; }
+                }
+                Err(_) => {
+                    s.merge(File::with_name("Settings"))?;
+                }
             };
         }
 
@@ -120,8 +125,10 @@ impl Settings {
         let movie_dir = Settings::validate_path(s.get::<String>("movie_dir"), &mut fallback_dir);
 
         let autodownload = s.get_bool("autodownload").unwrap_or(false);
-        let default_proxy = s.get::<String>("default_proxy").unwrap_or(String::from(""));
-        
+        let default_proxy = s
+            .get::<String>("default_proxy")
+            .unwrap_or_else(|_| String::from(""));
+
         Ok(Settings {
             anime_dir,
             tvshow_dir,
@@ -132,7 +139,7 @@ impl Settings {
         })
     }
 
-    pub fn generate_settings_file() -> Result<(), io::Error>{
+    pub fn generate_settings_file() -> Result<(), io::Error> {
         let mut file;
 
         if let Some(proj_dirs) = ProjectDirs::from("", "", "magnetfinder") {
@@ -143,13 +150,13 @@ impl Settings {
                 fs::create_dir(&config_path)?;
             }
 
-            config_path.push("Settings.toml"); 
+            config_path.push("Settings.toml");
 
             file = fs::File::create(config_path)?;
         } else {
             eprintln!("Error finding project config directory, falling back to executable path");
             if let Ok(mut exe_path) = env::current_exe() {
-                exe_path.pop(); 
+                exe_path.pop();
                 exe_path.push("Settings.toml");
                 file = fs::File::create(exe_path)?;
             } else {
@@ -158,7 +165,7 @@ impl Settings {
         }
 
         file.write_all(
-b"# Change directories to where you want each type of media to download to,
+            b"# Change directories to where you want each type of media to download to,
 # or where default directory is in arg mode
 
 # use absolute paths (/home/user/Downloads/ , C:\\..\\user\\downloads\\ )
@@ -178,7 +185,7 @@ autodownload = false
 
 # setting a default proxy allows you to tunnel all scraping from torrent websites through
 # this set proxy by default. If using a socks5 proxy, format ip like so: socks5://192.168.1.1:9000
-default_proxy = \"\""
+default_proxy = \"\"",
         )?;
 
         Ok(())

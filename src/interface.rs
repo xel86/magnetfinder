@@ -4,12 +4,12 @@ use std::process;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use comfy_table::{ Table, ContentArrangement };
-use comfy_table::presets::UTF8_FULL;
-use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use clap::ArgMatches;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::{ContentArrangement, Table};
 
-use crate::{ Torrent, UserParameters, Website, Media, Sort, Settings};
+use crate::{Media, Settings, Sort, Torrent, UserParameters, Website};
 
 impl Website {
     fn new(s: &str) -> Result<Vec<Website>, &'static str> {
@@ -33,7 +33,7 @@ impl Media {
             _ => Err("Unknown media type, supported types: anime, movie, tvshow"),
         }
     }
-    
+
     fn path(&self, settings: &Settings) -> Rc<PathBuf> {
         match self {
             Media::Anime => Rc::clone(&settings.anime_dir),
@@ -71,7 +71,7 @@ impl UserParameters {
                 });
                 eprintln!("Generated default Settings.toml");
                 Settings::default()
-            },
+            }
         };
 
         UserParameters {
@@ -88,10 +88,18 @@ impl UserParameters {
     // parses provided cmd arguments bypassing user interface prompt
     fn fetch(args: ArgMatches) -> UserParameters {
         let mut websites: Vec<Website> = Vec::new();
-        if args.is_present("nyaa") { websites.push(Website::Nyaa); }
-        if args.is_present("piratebay") { websites.push(Website::Piratebay); }
-        if args.is_present("yts") { websites.push(Website::YTS); }
-        if args.is_present("all") { websites = Website::new("all").unwrap(); }
+        if args.is_present("nyaa") {
+            websites.push(Website::Nyaa);
+        }
+        if args.is_present("piratebay") {
+            websites.push(Website::Piratebay);
+        }
+        if args.is_present("yts") {
+            websites.push(Website::YTS);
+        }
+        if args.is_present("all") {
+            websites = Website::new("all").unwrap();
+        }
 
         let config_settings = match Settings::fetch() {
             Ok(s) => s,
@@ -101,11 +109,13 @@ impl UserParameters {
                 });
                 eprintln!("Generated default Settings.toml");
                 Settings::default()
-            },
+            }
         };
-        
+
         if websites.is_empty() {
-            eprintln!("Must select website to scrape from, -n for nyaa, -p for piratebay, -a for all");
+            eprintln!(
+                "Must select website to scrape from, -n for nyaa, -p for piratebay, -a for all"
+            );
             process::exit(1);
         }
 
@@ -121,9 +131,7 @@ impl UserParameters {
         };
 
         let search_depth: u32 = match args.value_of("depth") {
-            Some(n) => {
-                n.trim().parse().unwrap_or(1) 
-            }, 
+            Some(n) => n.trim().parse().unwrap_or(1),
             None => 1,
         };
 
@@ -164,7 +172,7 @@ impl UserParameters {
                 Err(err) => {
                     println!("{}", err);
                     continue;
-                },
+                }
             };
 
             return websites;
@@ -179,7 +187,7 @@ impl UserParameters {
             io::stdin()
                 .read_line(&mut input)
                 .expect("io error: failed to read media type input");
-            
+
             let type_of_media = match Media::new(&input) {
                 Ok(media) => media,
                 Err(err) => {
@@ -204,8 +212,12 @@ impl UserParameters {
     }
 }
 
-pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String>{
-    let mut torrents_shown: usize = if torrents.len() < 20 { torrents.len() } else { 20 };
+pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String> {
+    let mut torrents_shown: usize = if torrents.len() < 20 {
+        torrents.len()
+    } else {
+        20
+    };
     loop {
         let mut table = Table::new();
 
@@ -214,7 +226,7 @@ pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String>{
             .apply_modifier(UTF8_ROUND_CORNERS)
             .set_content_arrangement(ContentArrangement::Dynamic)
             .set_header(vec!["#", "Name", "Size", "Seeds"]);
-    
+
         let table = update_torrent_table(&mut table, &torrents[0..torrents_shown]);
         println!("{}", table);
 
@@ -222,14 +234,17 @@ pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String>{
             return mag;
         }
 
-        torrents_shown =
-        if torrents.len() < torrents_shown+20 { torrents.len() } else { torrents_shown+20 };
+        torrents_shown = if torrents.len() < torrents_shown + 20 {
+            torrents.len()
+        } else {
+            torrents_shown + 20
+        };
     }
 }
 
 fn update_torrent_table<'a>(table: &'a mut Table, torrents: &[Torrent]) -> &'a Table {
     for (n, t) in torrents.iter().enumerate() {
-        table.add_row(vec![&(n+1).to_string(), &t.title, &t.size, &t.seeders]);
+        table.add_row(vec![&(n + 1).to_string(), &t.title, &t.size, &t.seeders]);
     }
 
     table
@@ -244,10 +259,12 @@ pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Option<Vec<&String>> {
         io::stdin()
             .read_line(&mut selections)
             .expect("io error: couldn't read torrent selection input");
-        
+
         let selections: Vec<&str> = selections.trim().split(' ').collect();
         if selections.is_empty() {
-            println!("Please input one or multiple numbers seperated by a space to select torrent(s)");
+            println!(
+                "Please input one or multiple numbers seperated by a space to select torrent(s)"
+            );
             continue;
         }
 
@@ -266,18 +283,21 @@ pub fn prompt_torrent_selection(torrents: &[Torrent]) -> Option<Vec<&String>> {
                 continue;
             }
         };
-        
+
         return Some(magnets);
     }
 }
 
-fn collect_magnet_links<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Result<Vec<&'a String>, &'static str> {
+fn collect_magnet_links<'a>(
+    torrents: &'a [Torrent],
+    selections: &[&str],
+) -> Result<Vec<&'a String>, &'static str> {
     let mut magnets = Vec::new();
     for num_str in selections {
         let num: usize = match num_str.parse() {
             Err(_) => {
                 return Err("Only input numbers indicated on the left-most column");
-            },
+            }
             Ok(num) => num,
         };
 
@@ -285,16 +305,16 @@ fn collect_magnet_links<'a>(torrents: &'a [Torrent], selections: &[&str]) -> Res
             return Err("Input out of range");
         }
 
-        magnets.push(&torrents[num-1].magnet);
+        magnets.push(&torrents[num - 1].magnet);
     }
     Ok(magnets)
 }
 
 fn args_present(args: &ArgMatches) -> bool {
-    args.is_present("nyaa") ||
-    args.is_present("piratebay") ||
-    args.is_present("all") ||
-    args.is_present("download") ||
-    args.is_present("directory") ||
-    args.is_present("query")
+    args.is_present("nyaa")
+        || args.is_present("piratebay")
+        || args.is_present("all")
+        || args.is_present("download")
+        || args.is_present("directory")
+        || args.is_present("query")
 }

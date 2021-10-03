@@ -1,18 +1,18 @@
+pub mod interface;
 pub mod nyaa;
 pub mod piratebay;
-pub mod yts;
-pub mod interface;
-pub mod types;
 pub mod settings;
+pub mod types;
+pub mod yts;
 
-use std::process;
 use std::cmp::Reverse;
+use std::process;
 use std::sync::{mpsc, Arc};
 
 use clap::ArgMatches;
-use ureq::{AgentBuilder, Agent};
+use ureq::{Agent, AgentBuilder};
 
-use types::{Settings, UserParameters, Website, Media, Sort, Torrent};
+use types::{Media, Settings, Sort, Torrent, UserParameters, Website};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);
@@ -25,15 +25,24 @@ pub fn run(args: ArgMatches) {
     let (tx, rx) = mpsc::channel();
     for website in user_parameters.websites {
         match website {
-            Website::Nyaa => {
-                nyaa::query(&client, tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
-            },
-            Website::Piratebay => { 
-                piratebay::query(&client, tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
-            },
-            Website::YTS => {
-                yts::query(&client, tx.clone(), &user_parameters.search_query, user_parameters.search_depth)
-            }
+            Website::Nyaa => nyaa::query(
+                &client,
+                tx.clone(),
+                &user_parameters.search_query,
+                user_parameters.search_depth,
+            ),
+            Website::Piratebay => piratebay::query(
+                &client,
+                tx.clone(),
+                &user_parameters.search_query,
+                user_parameters.search_depth,
+            ),
+            Website::YTS => yts::query(
+                &client,
+                tx.clone(),
+                &user_parameters.search_query,
+                user_parameters.search_depth,
+            ),
         };
     }
     drop(tx);
@@ -54,8 +63,7 @@ pub fn run(args: ArgMatches) {
         for m in magnets {
             download_torrent(user_parameters.directory.to_str().unwrap(), &m);
         }
-    }
-    else {
+    } else {
         for m in magnets {
             println!("{}", m);
         }
@@ -65,11 +73,8 @@ pub fn run(args: ArgMatches) {
 fn build_http_client(proxy: &str) -> Result<Agent, ureq::Error> {
     if proxy.is_empty() {
         Ok(Agent::new())
-    }
-    else {
-        Ok(AgentBuilder::new()
-            .proxy(ureq::Proxy::new(proxy)?)
-            .build())
+    } else {
+        Ok(AgentBuilder::new().proxy(ureq::Proxy::new(proxy)?).build())
     }
 }
 
@@ -80,8 +85,12 @@ fn download_torrent(dir: &str, magnet: &str) {
         .arg("--path")
         .arg(dir)
         .arg(magnet)
-        .status() {
-            eprintln!("Failed to autodownload using torrent client selected: {}", err);
-            println!("{}", magnet);
-        }
+        .status()
+    {
+        eprintln!(
+            "Failed to autodownload using torrent client selected: {}",
+            err
+        );
+        println!("{}", magnet);
+    }
 }

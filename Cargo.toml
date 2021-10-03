@@ -13,7 +13,7 @@ categories = ["command-line-utilities"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ureq = { version = "*", features = ["json", "socks-proxy"] }
+ureq = { version = "2.2.0", features = ["json", "socks-proxy"] }
 scraper = "0.12.0"
 comfy-table = "4.1.1"
 config = "0.11.0"

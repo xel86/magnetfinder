@@ -61,7 +61,7 @@ pub fn run(args: ArgMatches) {
 
     if user_parameters.autodownload {
         for m in magnets {
-            download_torrent(user_parameters.directory.to_str().unwrap(), &m);
+            download_torrent(user_parameters.directory.to_str().unwrap(), m);
         }
     } else {
         for m in magnets {

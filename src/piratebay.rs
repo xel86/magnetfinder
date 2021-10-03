@@ -9,8 +9,8 @@ use crate::Torrent;
 pub fn query(client: &Arc<Agent>, tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
     for page in 1..=depth {
         let t_tx = Sender::clone(&tx);
-        let t_client = Arc::clone(&client);
-        let t_query = Arc::clone(&query);
+        let t_client = Arc::clone(client);
+        let t_query = Arc::clone(query);
 
         thread::spawn(move || {
             let torrents = fetch_page_results(&t_client, &t_query, page).unwrap_or_else(|err| {

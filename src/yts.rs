@@ -2,7 +2,7 @@ use std::sync::{Arc, mpsc::Sender};
 use std::thread;
 
 use serde::Deserialize;
-use reqwest::{blocking::Client};
+use ureq::Agent;
 
 use crate::Torrent;
 
@@ -64,7 +64,7 @@ struct YTSResponse {
     data: YTSData
 }
 
-pub fn query(client: &Arc<Client>, tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
+pub fn query(client: &Arc<Agent>, tx: Sender<Vec<Torrent>>, query: &Arc<String>, depth: u32) {
     for page in 1..=depth {
         let t_tx = Sender::clone(&tx);
         let t_client = Arc::clone(&client);
@@ -74,7 +74,7 @@ pub fn query(client: &Arc<Client>, tx: Sender<Vec<Torrent>>, query: &Arc<String>
             let torrents = fetch_page_results(&t_client, &t_query, page).unwrap_or_else(|err| {
                 // json decode errors will occur when search_depth is greater than
                 // the number of pages yts has for a search, ignore error messages for this
-                if !err.to_string().contains("decoding") {
+                if !err.to_string().contains("Failed to read JSON") {
                     eprintln!("Error requesting data from yts: {:?}", err);
                 }
 
@@ -86,7 +86,7 @@ pub fn query(client: &Arc<Client>, tx: Sender<Vec<Torrent>>, query: &Arc<String>
     }
 }
 
-pub fn fetch_page_results(client: &Client, query: &str, page_number: u32) -> Result<Vec<Torrent>, reqwest::Error> {
+pub fn fetch_page_results(client: &Agent, query: &str, page_number: u32) -> Result<Vec<Torrent>, ureq::Error> {
     let mut results = Vec::new();
 
     let formatted_query = query.replace(" ", "+");
@@ -95,7 +95,7 @@ pub fn fetch_page_results(client: &Client, query: &str, page_number: u32) -> Res
         formatted_query,
         page_number
     );
-    let body = client.get(&url).send()?.json::<YTSResponse>()?;
+    let body = client.get(&url).call()?.into_json::<YTSResponse>()?;
 
     for movie in body.data.movies {
         let title = movie.title_long;

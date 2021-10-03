@@ -10,16 +10,16 @@ use std::cmp::Reverse;
 use std::sync::{mpsc, Arc};
 
 use clap::ArgMatches;
-use reqwest::{blocking::Client};
+use ureq::{AgentBuilder, Agent};
 
 use types::{Settings, UserParameters, Website, Media, Sort, Torrent};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);
 
-    let client = Arc::new(match build_reqwest_client(&user_parameters.proxy) {
+    let client = Arc::new(match build_http_client(&user_parameters.proxy) {
         Ok(client) => client,
-        Err(_) => Client::new(),
+        Err(_) => Agent::new(),
     });
 
     let (tx, rx) = mpsc::channel();
@@ -62,15 +62,14 @@ pub fn run(args: ArgMatches) {
     }
 }
 
-fn build_reqwest_client(proxy: &str) -> Result<Client, reqwest::Error> {
+fn build_http_client(proxy: &str) -> Result<Agent, ureq::Error> {
     if proxy.is_empty() {
-        Client::builder()
-            .build()
+        Ok(Agent::new())
     }
     else {
-        Client::builder()
-            .proxy(reqwest::Proxy::all(proxy)?)
-            .build()
+        Ok(AgentBuilder::new()
+            .proxy(ureq::Proxy::new(proxy)?)
+            .build())
     }
 }
 

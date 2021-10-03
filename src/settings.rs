@@ -67,7 +67,8 @@ impl DownloadDirCache {
 
                     let dir: Rc<PathBuf> = Rc::new(PathBuf::from(dir));
                     self.value = Some(Rc::clone(&dir));
-                    return dir;
+
+                    dir
                 } else {
                     eprintln!("Error getting home directory");
                     process::exit(1);

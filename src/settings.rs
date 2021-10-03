@@ -55,7 +55,7 @@ impl DownloadDirCache {
 
     pub fn value(&mut self) -> Rc<PathBuf> {
         match &self.value {
-            Some(val) => Rc::clone(&val),
+            Some(val) => Rc::clone(val),
             None => {
                 if let Some(user_dirs) = UserDirs::new() {
                     let dir = user_dirs.download_dir().unwrap_or_else(|| {

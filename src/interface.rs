@@ -230,7 +230,7 @@ pub fn display_torrent_table(torrents: &[Torrent]) -> Vec<&String> {
         let table = update_torrent_table(&mut table, &torrents[0..torrents_shown]);
         println!("{}", table);
 
-        if let Some(mag) = prompt_torrent_selection(&torrents) {
+        if let Some(mag) = prompt_torrent_selection(torrents) {
             return mag;
         }
 

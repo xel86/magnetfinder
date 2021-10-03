@@ -8,7 +8,7 @@ use ureq::Agent;
 fn nyaa_produces_results() {
     let results = nyaa::fetch_page_results(&Agent::new(), "episode", 1).unwrap();
 
-    assert!(results.len() > 0, "returned torrent vector was empty");
+    assert!(!results.is_empty(), "returned torrent vector was empty");
 
     assert!(
         results[0].title.to_lowercase().contains("episode"),
@@ -32,7 +32,7 @@ fn nyaa_produces_results() {
 fn piratebay_produces_results() {
     let results = piratebay::fetch_page_results(&Agent::new(), "episode", 1).unwrap();
 
-    assert!(results.len() > 0, "returned torrent vector was empty");
+    assert!(!results.is_empty(), "returned torrent vector was empty");
 
     assert!(
         results[0].title.to_lowercase().contains("episode"),
@@ -56,7 +56,7 @@ fn piratebay_produces_results() {
 fn yts_produces_results() {
     let results = yts::fetch_page_results(&Agent::new(), "star", 1).unwrap();
 
-    assert!(results.len() > 0, "returned torrent vector was empty");
+    assert!(!results.is_empty(), "returned torrent vector was empty");
 
     assert!(
         results[0].title.to_lowercase().contains("star"),

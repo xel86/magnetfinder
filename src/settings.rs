@@ -129,7 +129,7 @@ impl Settings {
 
         let torrent_client = s
             .get::<String>("torrent_client")
-            .unwrap_or(String::from(""));
+            .unwrap_or_else(|_| String::from(""));
 
         let default_proxy = s
             .get::<String>("default_proxy")

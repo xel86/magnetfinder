@@ -12,7 +12,7 @@ use std::sync::{mpsc, Arc};
 use clap::ArgMatches;
 use ureq::{Agent, AgentBuilder};
 
-use types::{Media, Settings, Sort, Torrent, UserParameters, Website};
+use types::{Media, Settings, Sort, Torrent, TorrentClient, UserParameters, Website};
 
 pub fn run(args: ArgMatches) {
     let user_parameters = UserParameters::get_params(args);
@@ -61,7 +61,11 @@ pub fn run(args: ArgMatches) {
 
     if user_parameters.autodownload {
         for m in magnets {
-            download_torrent(user_parameters.directory.to_str().unwrap(), m);
+            download_torrent(
+                &user_parameters.torrent_client,
+                user_parameters.directory.to_str().unwrap(),
+                m,
+            );
         }
     } else {
         for m in magnets {
@@ -78,7 +82,18 @@ fn build_http_client(proxy: &str) -> Result<Agent, ureq::Error> {
     }
 }
 
-fn download_torrent(dir: &str, magnet: &str) {
+fn download_torrent(client: &TorrentClient, dir: &str, magnet: &str) {
+    match client {
+        TorrentClient::Deluge => call_deluge(dir, magnet),
+        TorrentClient::Transmission => call_transmission(dir, magnet),
+        TorrentClient::Unknown => {
+            eprintln!("Unknown or empty torrent client in config file. Edit config with supported torrent client to used autodownload");
+            println!("{}", magnet);
+        }
+    }
+}
+
+fn call_deluge(dir: &str, magnet: &str) {
     if let Err(err) = process::Command::new("sudo")
         .arg("deluge-console")
         .arg("add")
@@ -88,7 +103,23 @@ fn download_torrent(dir: &str, magnet: &str) {
         .status()
     {
         eprintln!(
-            "Failed to autodownload using torrent client selected: {}",
+            "Failed to autodownload using torrent client deluge: {}",
+            err
+        );
+        println!("{}", magnet);
+    }
+}
+
+fn call_transmission(dir: &str, magnet: &str) {
+    if let Err(err) = process::Command::new("transmission-remote")
+        .arg("-w")
+        .arg(dir)
+        .arg("-a")
+        .arg(magnet)
+        .status()
+    {
+        eprintln!(
+            "Failed to autodownload using torrent client transmission: {}",
             err
         );
         println!("{}", magnet);

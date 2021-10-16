@@ -9,7 +9,7 @@ use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
 use comfy_table::{ContentArrangement, Table};
 
-use crate::{Media, Settings, Sort, Torrent, UserParameters, Website};
+use crate::{Media, Settings, Sort, Torrent, TorrentClient, UserParameters, Website};
 
 impl Website {
     fn new(s: &str) -> Result<Vec<Website>, &'static str> {
@@ -52,6 +52,16 @@ impl Sort {
     }
 }
 
+impl TorrentClient {
+    fn new(s: &str) -> TorrentClient {
+        match s.to_lowercase().as_str() {
+            "deluge" => TorrentClient::Deluge,
+            "transmission" => TorrentClient::Transmission,
+            _ => TorrentClient::Unknown,
+        }
+    }
+}
+
 impl UserParameters {
     pub fn get_params(args: ArgMatches) -> UserParameters {
         if !args_present(&args) {
@@ -82,6 +92,7 @@ impl UserParameters {
             sort_preference: Sort::new("seeds"),
             proxy: Arc::new(settings.default_proxy),
             autodownload: settings.autodownload,
+            torrent_client: TorrentClient::new(&settings.torrent_client),
         }
     }
 
@@ -147,6 +158,8 @@ impl UserParameters {
             None => Arc::new(config_settings.default_proxy),
         };
 
+        let torrent_client = TorrentClient::new(&config_settings.torrent_client);
+
         UserParameters {
             websites,
             directory,
@@ -155,6 +168,7 @@ impl UserParameters {
             sort_preference,
             proxy,
             autodownload: args.is_present("download"),
+            torrent_client,
         }
     }
 

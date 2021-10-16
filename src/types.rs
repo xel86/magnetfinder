@@ -53,6 +53,12 @@ pub enum Sort {
     Seeds,
 }
 
+pub enum TorrentClient {
+    Deluge,
+    Transmission,
+    Unknown,
+}
+
 pub struct Settings {
     pub anime_dir: Rc<PathBuf>,
     pub tvshow_dir: Rc<PathBuf>,
@@ -60,6 +66,7 @@ pub struct Settings {
     pub default_directory: Rc<PathBuf>,
     pub default_proxy: String,
     pub autodownload: bool,
+    pub torrent_client: String,
 }
 
 pub struct UserParameters {
@@ -70,4 +77,5 @@ pub struct UserParameters {
     pub sort_preference: Sort,
     pub proxy: Arc<String>,
     pub autodownload: bool,
+    pub torrent_client: TorrentClient,
 }

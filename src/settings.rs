@@ -26,6 +26,7 @@ impl Default for Settings {
                 default_directory: Rc::clone(&downloads_dir),
                 default_proxy: String::from(""),
                 autodownload: false,
+                torrent_client: String::from(""),
             }
         } else {
             eprintln!("Error getting home directory");
@@ -125,6 +126,11 @@ impl Settings {
         let movie_dir = Settings::validate_path(s.get::<String>("movie_dir"), &mut fallback_dir);
 
         let autodownload = s.get_bool("autodownload").unwrap_or(false);
+
+        let torrent_client = s
+            .get::<String>("torrent_client")
+            .unwrap_or(String::from(""));
+
         let default_proxy = s
             .get::<String>("default_proxy")
             .unwrap_or_else(|_| String::from(""));
@@ -136,6 +142,7 @@ impl Settings {
             default_directory: fallback_dir.value(),
             default_proxy,
             autodownload,
+            torrent_client,
         })
     }
 
@@ -178,6 +185,10 @@ movie_dir = \"\"
 
 #[ Default Directory (Arg & Interactive Mode) ]
 default_directory = \"\"
+
+#[ Torrent Client ]
+# current supported clients are \"deluge\", and \"Transmission\" (ex: torrent_client = \"deluge\")
+torrent_client = \"\"
 
 # Autodownload takes the magnet link selected and
 # uses the torrent-client chosen to begin downloading the torrent

@@ -58,7 +58,7 @@ pub fn run(args: ArgMatches) {
     }
 
     if torrents.is_empty() {
-        println!("No torrents found matching search query");
+        eprintln!("No torrents found matching search query");
         return;
     }
 

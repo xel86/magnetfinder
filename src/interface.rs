@@ -90,9 +90,11 @@ impl UserParameters {
             search_query: UserParameters::get_search_query(),
             search_depth: 1,
             sort_preference: Sort::new("seeds"),
+            num_torrents_shown: usize::MAX,
             proxy: Arc::new(settings.default_proxy),
             autodownload: settings.autodownload,
             torrent_client: TorrentClient::new(&settings.torrent_client),
+            no_interactive: false,
         }
     }
 
@@ -153,6 +155,11 @@ impl UserParameters {
 
         let sort_preference = Sort::new(args.value_of("sort").unwrap_or("seeds"));
 
+        let num_torrents_shown: usize = match args.value_of("num_torrents_shown") {
+            Some(n) => n.trim().parse().unwrap_or(usize::MAX),
+            None => usize::MAX,
+        };
+
         let proxy = match args.value_of("proxy") {
             Some(p) => Arc::new(String::from(p)),
             None => Arc::new(config_settings.default_proxy),
@@ -166,9 +173,11 @@ impl UserParameters {
             search_query,
             search_depth,
             sort_preference,
+            num_torrents_shown,
             proxy,
             autodownload: args.is_present("download"),
             torrent_client,
+            no_interactive: args.is_present("no-interactive"),
         }
     }
 

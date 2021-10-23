@@ -13,10 +13,9 @@ use crate::Settings;
 impl Default for Settings {
     fn default() -> Self {
         if let Some(user_dirs) = UserDirs::new() {
-            let downloads_dir = user_dirs.download_dir().unwrap_or_else(|| {
-                eprintln!("Error getting downloads directory, falling back to home directory");
-                user_dirs.home_dir()
-            });
+            let downloads_dir = user_dirs
+                .download_dir()
+                .unwrap_or_else(|| user_dirs.home_dir());
 
             let downloads_dir: Rc<PathBuf> = Rc::new(PathBuf::from(downloads_dir));
             Settings {

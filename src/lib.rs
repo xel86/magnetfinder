@@ -57,6 +57,11 @@ pub fn run(args: ArgMatches) {
         Sort::Seeds => torrents.sort_by_key(|t| Reverse((t.seeders).parse().unwrap_or(0))),
     }
 
+    if torrents.is_empty() {
+        println!("No torrents found matching search query");
+        return;
+    }
+
     let magnets = interface::display_torrent_table(&torrents);
 
     if user_parameters.autodownload {

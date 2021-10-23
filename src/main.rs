@@ -66,6 +66,17 @@ fn main() {
                 .long("proxy")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("no-interactive")
+                .help("disables any interactive features and simply prints all magnet results found to terminal")
+                .long("no-interactive")
+        )
+        .arg(
+            Arg::with_name("num_torrents_shown")
+                .help("limits the amount of torrents results shown, useful with --no-interactive")
+                .long("show")
+                .takes_value(true),
+        )
         .get_matches();
 
     magnetfinder::run(matches);

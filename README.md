@@ -27,6 +27,8 @@ Running magnetfinder without any arguments will launch interactive mode, prompti
 ```--dir <directory>``` directory to download torrent if autodownload was toggled<br>
 ```--sort <seeds/size>``` allows you to specifiy if the torrent table is sorted by seeders or size<br>
 ```--proxy <proxy url>``` allows you to set a proxy to use when making web requests to torrent websites & api<br>
+```--show <num>``` truncate list of torrents displayed by the number argument given
+```--no-interactive``` displays all torrents with magnet directly without interacting (--show is useful here)
   
 #### Configuration
 

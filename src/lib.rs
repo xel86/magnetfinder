@@ -62,19 +62,29 @@ pub fn run(args: ArgMatches) {
         return;
     }
 
-    let magnets = interface::display_torrent_table(&torrents);
+    if torrents.len() > user_parameters.num_torrents_shown {
+        torrents.truncate(user_parameters.num_torrents_shown);
+    }
 
-    if user_parameters.autodownload {
-        for m in magnets {
-            download_torrent(
-                &user_parameters.torrent_client,
-                user_parameters.directory.to_str().unwrap(),
-                m,
-            );
+    if !user_parameters.no_interactive {
+        let magnets = interface::display_torrent_table(&torrents);
+
+        if user_parameters.autodownload {
+            for m in magnets {
+                download_torrent(
+                    &user_parameters.torrent_client,
+                    user_parameters.directory.to_str().unwrap(),
+                    m,
+                );
+            }
+        } else {
+            for m in magnets {
+                println!("{}", m);
+            }
         }
     } else {
-        for m in magnets {
-            println!("{}", m);
+        for torrent in &torrents {
+            println!("{}\t{}", torrent.title, torrent.magnet);
         }
     }
 }

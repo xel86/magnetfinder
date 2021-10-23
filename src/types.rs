@@ -75,7 +75,9 @@ pub struct UserParameters {
     pub search_query: Arc<String>,
     pub search_depth: u32,
     pub sort_preference: Sort,
+    pub num_torrents_shown: usize,
     pub proxy: Arc<String>,
     pub autodownload: bool,
     pub torrent_client: TorrentClient,
+    pub no_interactive: bool,
 }

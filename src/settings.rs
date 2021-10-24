@@ -58,12 +58,9 @@ impl DownloadDirCache {
             Some(val) => Rc::clone(val),
             None => {
                 if let Some(user_dirs) = UserDirs::new() {
-                    let dir = user_dirs.download_dir().unwrap_or_else(|| {
-                        eprintln!(
-                            "Error getting downloads directory, falling back to home directory"
-                        );
-                        user_dirs.home_dir()
-                    });
+                    let dir = user_dirs
+                        .download_dir()
+                        .unwrap_or_else(|| user_dirs.home_dir());
 
                     let dir: Rc<PathBuf> = Rc::new(PathBuf::from(dir));
                     self.value = Some(Rc::clone(&dir));

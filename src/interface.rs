@@ -57,6 +57,7 @@ impl TorrentClient {
         match s.to_lowercase().as_str() {
             "deluge" => TorrentClient::Deluge,
             "transmission" => TorrentClient::Transmission,
+            "qbittorrent" | "qbt" => TorrentClient::QBittorrent,
             _ => TorrentClient::Unknown,
         }
     }

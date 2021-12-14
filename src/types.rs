@@ -56,6 +56,7 @@ pub enum Sort {
 pub enum TorrentClient {
     Deluge,
     Transmission,
+    QBittorrent,
     Unknown,
 }
 

@@ -9,6 +9,7 @@ Supported Websites:
 Supported torrent client for autodownloads:
 - deluge-console
 - transmission-cli
+- qbittorrent-cli (*[GitHub](https://github.com/ludviglundgren/qbittorrent-cli))
 
 ![](https://i.imgur.com/piuGz7w.png)
 

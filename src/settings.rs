@@ -183,7 +183,7 @@ movie_dir = \"\"
 default_directory = \"\"
 
 #[ Torrent Client ]
-# current supported clients are \"deluge\", and \"Transmission\" (ex: torrent_client = \"deluge\")
+# current supported clients are \"deluge\", \"Transmission\", and \"qbittorrent\" (ex: torrent_client = \"deluge\")
 torrent_client = \"\"
 
 # Autodownload takes the magnet link selected and

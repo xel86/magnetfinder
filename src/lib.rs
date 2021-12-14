@@ -101,6 +101,7 @@ fn download_torrent(client: &TorrentClient, dir: &str, magnet: &str) {
     match client {
         TorrentClient::Deluge => call_deluge(dir, magnet),
         TorrentClient::Transmission => call_transmission(dir, magnet),
+        TorrentClient::QBittorrent => call_qbittorrent(dir, magnet),
         TorrentClient::Unknown => {
             eprintln!("Unknown or empty torrent client in config file. Edit config with supported torrent client to used autodownload");
             println!("{}", magnet);
@@ -135,6 +136,23 @@ fn call_transmission(dir: &str, magnet: &str) {
     {
         eprintln!(
             "Failed to autodownload using torrent client transmission: {}",
+            err
+        );
+        println!("{}", magnet);
+    }
+}
+
+fn call_qbittorrent(dir: &str, magnet: &str) {
+    if let Err(err) = process::Command::new("qbt")
+        .arg("add")
+        .arg("--save-path")
+        .arg(dir)
+        .arg("--magnet")
+        .arg(magnet)
+        .status()
+    {
+        eprintln!(
+            "Failed to autodownload using torrent client qbittorrent (qbt): {}",
             err
         );
         println!("{}", magnet);

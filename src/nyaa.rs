@@ -111,8 +111,7 @@ fn get_magnet(table_row: &ElementRef) -> Option<String> {
         };
 
         if magnet.contains("magnet") {
-            let cleaned_magnet = magnet.split("&tr=").next().unwrap_or(magnet);
-            return Some(String::from(cleaned_magnet));
+            return Some(String::from(magnet));
         }
     }
 

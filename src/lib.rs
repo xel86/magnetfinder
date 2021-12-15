@@ -110,12 +110,13 @@ fn download_torrent(client: &TorrentClient, dir: &str, magnet: &str) {
 }
 
 fn call_deluge(dir: &str, magnet: &str) {
+    let wrapped_magnet = format!("\"{}\"", magnet);
     if let Err(err) = process::Command::new("sudo")
         .arg("deluge-console")
         .arg("add")
         .arg("--path")
         .arg(dir)
-        .arg(magnet)
+        .arg(wrapped_magnet)
         .status()
     {
         eprintln!(
@@ -127,11 +128,12 @@ fn call_deluge(dir: &str, magnet: &str) {
 }
 
 fn call_transmission(dir: &str, magnet: &str) {
+    let wrapped_magnet = format!("\"{}\"", magnet);
     if let Err(err) = process::Command::new("transmission-remote")
         .arg("-w")
         .arg(dir)
         .arg("-a")
-        .arg(magnet)
+        .arg(wrapped_magnet)
         .status()
     {
         eprintln!(
@@ -143,12 +145,13 @@ fn call_transmission(dir: &str, magnet: &str) {
 }
 
 fn call_qbittorrent(dir: &str, magnet: &str) {
+    let wrapped_magnet = format!("\"{}\"", magnet);
     if let Err(err) = process::Command::new("qbt")
         .arg("add")
         .arg("--save-path")
         .arg(dir)
         .arg("--magnet")
-        .arg(magnet)
+        .arg(wrapped_magnet)
         .status()
     {
         eprintln!(
